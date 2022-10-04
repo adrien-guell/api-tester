@@ -7,7 +7,7 @@ export function testEndpoints(config: ApiTesterConfig) {
         promptApiThatIsTested(api.baseUrl);
         for (const endpoint of api.endpoints) {
             axios.get(
-                `${api.baseUrl}${endpoint.route}}`,
+                `${api.baseUrl}${endpoint.route}`,
                 {
                     headers: api.headers,
                     params: Object.assign({}, api.apiKey, endpoint.queryParameters)
