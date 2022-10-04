@@ -15,5 +15,8 @@
     "@types/node": "^18.8.1",
     "typescript": "^4.8.4"
   },
-  "name": "api-tester"
+  "name": "api-tester",
+  "dependencies": {
+    "typescript-json-decoder": "^1.0.10"
+  }
 }
