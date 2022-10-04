@@ -1,3 +1,3 @@
 export type Dict = {
-    [key: string]: string | number
+    [key: string]: string | number | boolean
 }
