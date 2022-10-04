@@ -6,5 +6,5 @@ export type Endpoint<T> = {
     route: string,
     decoder: DecoderFunction<T>,
     postRequestValidation?: (data: T) => void,
-    queryParameters?: Dict[]
+    queryParameters?: Dict
 }
