@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-import {ApiConfig} from "./ApiConfig";
+import {ApiConfig} from "./src/ApiConfig";
 import chalk from "chalk";
 import axios from "axios";
+export * from "./src/ApiConfig";
 
 // TODO find automaticaly the js file folder
 import(`${process.cwd()}\\lib\\apitester-config.js`).then((defaultImport) => {

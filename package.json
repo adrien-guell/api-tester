@@ -1,5 +1,5 @@
 {
-  "main": "src",
+  "main": "lib",
   "bin": {
     "apitester": "./lib/index.js"
   },
