@@ -1,9 +1,9 @@
-import {ApiConfig} from "./models/ApiConfig";
+import {Api} from "./models/Api";
 import axios from "axios";
 import chalk from "chalk";
 import {promptErrorDecoding, promptSuccessDecoding} from "./ui/uiTools";
 
-export function testEndpoints(config: ApiConfig) {
+export function testEndpoints(config: Api) {
     for (const endpoint of config.endpoints) {
         axios.get(`${config.baseUrl}${endpoint.route}`, { headers: config.headers })
             .then((response) => {
