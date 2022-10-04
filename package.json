@@ -1,0 +1,19 @@
+{
+  "main": "./lib/main.js",
+  "bin": {
+    "apitester": "./lib/main.js"
+  },
+  "types": "node",
+  "scripts": {
+    "build": "tsc",
+    "start": "npm run build && node lib/main.js"
+  },
+  "engines": {
+    "node": "16"
+  },
+  "devDependencies": {
+    "@types/node": "^18.8.1",
+    "typescript": "^4.8.4"
+  },
+  "name": "api-tester"
+}
