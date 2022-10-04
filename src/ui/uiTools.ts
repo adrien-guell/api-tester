@@ -7,3 +7,11 @@ export function promptSuccessDecoding(endpointRoute: string) {
 export function promptErrorDecoding(endpointRoute: string) {
     console.log(chalk.red(`Decoding error: ${endpointRoute}`));
 }
+
+export function promptApiThatIsTested(apiUrl: string) {
+    const text = `| Testing api ${apiUrl} |`;
+    const bar = "_".repeat(text.length);
+    console.log(chalk.blue(bar));
+    console.log(chalk.blue(text));
+    console.log(chalk.blue(bar));
+}
