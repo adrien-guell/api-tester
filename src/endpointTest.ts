@@ -1,7 +1,7 @@
 import axios, {AxiosError} from "axios";
 import {promptApiThatIsTested, promptErrorDecoding, promptSuccessDecoding} from "./ui/uiTools";
 import {ApiTesterConfig} from "./models/ApiTesterConfig";
-import {writeFileSync} from "fs";
+import {appendFileSync} from "fs";
 
 export async function testEndpoints(config: ApiTesterConfig, showDetails: boolean) {
     const logFilename = `apitester-log-${Date.now()}.txt`
@@ -23,7 +23,7 @@ export async function testEndpoints(config: ApiTesterConfig, showDetails: boolea
                     promptErrorDecoding(endpoint.route);
                     if (showDetails)
                         console.error(e);
-                    writeFileSync(logFilename, `${e}`);
+                    appendFileSync(logFilename, `${e}`);
                 }
             }).catch((error: Error | AxiosError) => {
                 console.error(axios.isAxiosError(error) ? error.message : error)
