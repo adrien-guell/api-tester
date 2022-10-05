@@ -1,8 +1,10 @@
 import axios from "axios";
 import {promptApiThatIsTested, promptErrorDecoding, promptSuccessDecoding} from "./ui/uiTools";
 import {ApiTesterConfig} from "./models/ApiTesterConfig";
+import {writeFileSync} from "fs";
 
-export async function testEndpoints(config: ApiTesterConfig) {
+export async function testEndpoints(config: ApiTesterConfig, showDetails: boolean) {
+    const logFilename = `apitester-log-${Date.now()}.txt`
     for (const api of config.apisConfig) {
         promptApiThatIsTested(api.baseUrl);
         for (const endpoint of api.endpoints) {
@@ -15,15 +17,15 @@ export async function testEndpoints(config: ApiTesterConfig) {
             ).then((response) => {
                 try {
                     const decodedData = endpoint.decoder(response.data);
-                    if (endpoint.postRequestValidation) {
-                        endpoint.postRequestValidation(decodedData);
-                    }
+                    if (endpoint.postRequestValidation) endpoint.postRequestValidation(decodedData);
                     promptSuccessDecoding(endpoint.route);
                 } catch (e) {
                     promptErrorDecoding(endpoint.route);
+                    if (showDetails)
+                        console.error(e);
+                    writeFileSync(logFilename, `${e}`);
                 }
-            })
-                .catch(console.error);
+            }).catch(console.error);
         }
     }
 }

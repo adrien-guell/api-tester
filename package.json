@@ -1,7 +1,7 @@
 {
   "main": "lib",
   "bin": {
-    "apitester": "./lib/index.js"
+    "api-tester": "./lib/index.js"
   },
   "types": "node",
   "scripts": {
@@ -19,6 +19,7 @@
   "dependencies": {
     "axios": "^0.27.2",
     "chalk": "^4.1.2",
+    "commander": "^9.4.1",
     "typescript-json-decoder": "^1.0.10"
   }
 }

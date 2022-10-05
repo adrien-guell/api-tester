@@ -1,9 +1,24 @@
 #!/usr/bin/env node
 import {testEndpoints} from "./src/endpointTest";
 import {ApiTesterConfig} from "./src/models/ApiTesterConfig";
+import {program} from "commander";
+
 export * from "./src/models/ApiTesterConfig";
 
-import(`${process.cwd()}\\lib\\apitester-config.js`).then((defaultImport) => {
-    const config: ApiTesterConfig = defaultImport.default;
-    testEndpoints(config);
-});
+export type Options = {
+    configLocation?: string,
+    detail: boolean
+}
+
+program.name('api-tester');
+program.description('Test API endpoints with their matching decoders')
+    .option('-c, --config \<configLocation\>', 'Set the config file location')
+    .option('-d, --detail', 'Show more details for on error')
+    .action((options: Options) => {
+        import(options.configLocation ? options.configLocation :`${process.cwd()}\\lib\\apitester-config.js`)
+            .then((defaultImport) => {
+                const config: ApiTesterConfig = defaultImport.default;
+                testEndpoints(config, options.detail);
+            }).catch(console.error);
+    })
+program.parse()
