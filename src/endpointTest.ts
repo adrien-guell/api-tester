@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, {AxiosError} from "axios";
 import {promptApiThatIsTested, promptErrorDecoding, promptSuccessDecoding} from "./ui/uiTools";
 import {ApiTesterConfig} from "./models/ApiTesterConfig";
 import {writeFileSync} from "fs";
@@ -25,7 +25,9 @@ export async function testEndpoints(config: ApiTesterConfig, showDetails: boolea
                         console.error(e);
                     writeFileSync(logFilename, `${e}`);
                 }
-            }).catch(console.error);
+            }).catch((error: Error | AxiosError) => {
+                console.error(axios.isAxiosError(error) ? error.message : error)
+            });
         }
     }
 }
