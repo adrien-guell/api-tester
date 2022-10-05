@@ -2,11 +2,11 @@ import axios from "axios";
 import {promptApiThatIsTested, promptErrorDecoding, promptSuccessDecoding} from "./ui/uiTools";
 import {ApiTesterConfig} from "./models/ApiTesterConfig";
 
-export function testEndpoints(config: ApiTesterConfig) {
+export async function testEndpoints(config: ApiTesterConfig) {
     for (const api of config.apisConfig) {
         promptApiThatIsTested(api.baseUrl);
         for (const endpoint of api.endpoints) {
-            axios.get(
+            await axios.get(
                 `${api.baseUrl}${endpoint.route}`,
                 {
                     headers: api.headers,
