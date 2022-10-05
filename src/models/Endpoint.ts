@@ -1,5 +1,5 @@
-import {DecoderFunction, Pojo} from "typescript-json-decoder";
-import {Dict} from "./Dict";
+import { DecoderFunction } from "typescript-json-decoder";
+import { Dict } from "./Dict";
 
 
 export type Endpoint<T> = {
