@@ -5,7 +5,7 @@ This package only works on typescript projects.
 
 ## Setup
 
-Instalation : `npm i api-tester`
+Instalation : `npm i decoder-api-tester`
 
 ___
 
@@ -49,9 +49,9 @@ Add the apitester-config.ts file to the compiled files in tsconfig.json
 ```json
 {
   "compilerOptions": {
-    ...                             
+    ...
   },
-  "include": ["src", "apitester-config.ts"] // Add here
+  "include": ["src", "apitester-config.ts"]
 }
 ```
 ___
