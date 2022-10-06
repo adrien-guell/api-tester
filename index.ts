@@ -18,7 +18,8 @@ program.description('Test API endpoints with their matching decoders')
     .option('-d, --detail', 'Show more details for on error')
     .action(async (options: Options) => {
             const currentWorkingDirectory = process.cwd();
-            const file: string = readFileSync(`${currentWorkingDirectory}\\tsconfig.json`, "utf8");
+            let file: string = readFileSync(`${currentWorkingDirectory}\\tsconfig.json`, "utf8");
+            file = file.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim()
             const outDir = JSON.parse(file).compilerOptions.outDir ?? "";
             let configLocation = options.configLocation;
             if (!configLocation) {
