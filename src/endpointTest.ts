@@ -1,10 +1,14 @@
 import axios, {AxiosError} from "axios";
-import {promptApiThatIsTested, promptErrorDecoding, promptSuccessDecoding} from "./ui/uiTools";
+import {promptApiThatIsTested, promptFail} from "./ui/uiTools";
 import {ApiTesterConfig} from "./models/ApiTesterConfig";
 import {appendFileSync} from "fs";
+import chalk from "chalk";
+import * as fs from "fs";
 
 export async function testEndpoints(config: ApiTesterConfig, showDetails: boolean) {
-    const logFilename = `apitester-log-${Date.now()}.txt`
+    if (!fs.existsSync('apitester_logs')) fs.mkdirSync('apitester_logs');
+    const logFilename = `apitester_logs\\apitester-log-${Date.now()}.txt`
+
     for (const api of config.apisConfig) {
         promptApiThatIsTested(api.baseUrl);
         for (const endpoint of api.endpoints) {
@@ -18,15 +22,12 @@ export async function testEndpoints(config: ApiTesterConfig, showDetails: boolea
                 try {
                     const decodedData = endpoint.decoder(response.data);
                     if (endpoint.postRequestValidation) endpoint.postRequestValidation(decodedData);
-                    promptSuccessDecoding(endpoint.route);
-                } catch (e) {
-                    promptErrorDecoding(endpoint.route);
-                    if (showDetails)
-                        console.error(e);
-                    appendFileSync(logFilename, `${e}`);
+                    console.log(chalk.green(`${endpoint.route} - Success`));
+                } catch (error) {
+                    promptFail(endpoint.route, showDetails, logFilename, error)
                 }
             }).catch((error: Error | AxiosError) => {
-                console.error(axios.isAxiosError(error) ? error.message : error)
+                promptFail(endpoint.route, showDetails, logFilename, error)
             });
         }
     }

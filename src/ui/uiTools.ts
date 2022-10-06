@@ -1,17 +1,23 @@
 import chalk from "chalk";
+import axios, {AxiosError} from "axios";
+import {appendFileSync} from "fs";
 
-export function promptSuccessDecoding(endpointRoute: string) {
-    console.log(chalk.green(`Decoded successfully: ${endpointRoute}`));
-}
-
-export function promptErrorDecoding(endpointRoute: string) {
-    console.log(chalk.red(`Decoding error: ${endpointRoute}`));
+export function promptFail(
+    endpointRoute: string,
+    showDetails: boolean,
+    logFilename: string,
+    error: AxiosError | Error | any
+) {
+    const failMessage = `${endpointRoute} - Failed`;
+    const errorDetail = ` : ${axios.isAxiosError(error) ? error.message : error}`;
+    console.log(chalk.red(failMessage + (showDetails ? errorDetail : "")));
+    appendFileSync(logFilename, failMessage + errorDetail + `\n`);
 }
 
 export function promptApiThatIsTested(apiUrl: string) {
-    const text = `| Testing api ${apiUrl} |`;
-    const bar = "_".repeat(text.length);
-    console.log(chalk.blue(bar));
+    const text = `│ Testing api ${apiUrl} │`;
+    const bar = "―".repeat(text.length - 2);
+    console.log(chalk.blue(`╭${bar}╮`));
     console.log(chalk.blue(text));
-    console.log(chalk.blue(bar));
+    console.log(chalk.blue(`╰${bar}╯`));
 }
