@@ -1,36 +1,23 @@
 #!/usr/bin/env node
-import {testEndpoints} from "./src/endpointTest";
-import {ApiTesterConfig} from "./src/models/ApiTesterConfig";
-import {program} from "commander";
-import {readFileSync} from "fs";
-import * as path from "path";
+import { getConfigLocation, testEndpoints } from './src/utils';
+import { ApiTesterConfig } from './src/models/ApiTesterConfig';
+import { program } from 'commander';
+import { Options } from './src/models/Options';
 
-export * from "./src/models/ApiTesterConfig";
-
-export type Options = {
-    configLocation?: string,
-    detail: boolean
-}
+export * from './src/models/ApiTesterConfig';
 
 program.name('api-tester');
-program.description('Test API endpoints with their matching decoders')
-    .option('-c, --config \<configLocation\>', 'Set the config file location')
+program
+    .description('Test API endpoints with their matching decoders')
+    .option('-c, --config <configLocation>', 'Set the config file location')
     .option('-d, --detail', 'Show more details for on error')
     .action(async (options: Options) => {
-            const currentWorkingDirectory = process.cwd();
-            let file: string = readFileSync(`${currentWorkingDirectory}\\tsconfig.json`, "utf8");
-            file = file.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim()
-            const outDir = JSON.parse(file).compilerOptions.outDir ?? "";
-            let configLocation = options.configLocation;
-            if (!configLocation) {
-                configLocation = path.join(currentWorkingDirectory, outDir, "apitester-config.js");
-            }
-
-            import(configLocation)
-                .then((defaultImport) => {
-                    const config: ApiTesterConfig = defaultImport.default;
-                    testEndpoints(config, options.detail);
-                }).catch(console.error);
-        }
-    )
-program.parse()
+        const configLocation = options.configLocation ?? getConfigLocation();
+        import(configLocation)
+            .then((defaultImport) => {
+                const config: ApiTesterConfig = defaultImport.default;
+                testEndpoints(config, options.detail);
+            })
+            .catch(console.error);
+    });
+program.parse();

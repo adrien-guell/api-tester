@@ -3,6 +3,8 @@ import { promptApiThatIsTested, promptFail } from './ui/uiTools';
 import { ApiTesterConfig } from './models/ApiTesterConfig';
 import chalk from 'chalk';
 import * as fs from 'fs';
+import {readFileSync} from "fs";
+import path from "path";
 
 export async function testEndpoints(config: ApiTesterConfig, showDetails: boolean) {
     if (!fs.existsSync('apitester_logs')) fs.mkdirSync('apitester_logs');
@@ -31,4 +33,12 @@ export async function testEndpoints(config: ApiTesterConfig, showDetails: boolea
                 });
         }
     }
+}
+
+export function getConfigLocation() {
+    const currentWorkingDirectory = process.cwd();
+    let file: string = readFileSync(`${currentWorkingDirectory}\\tsconfig.json`, 'utf8');
+    file = file.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
+    const outDir = JSON.parse(file).compilerOptions.outDir ?? '';
+    return path.join(currentWorkingDirectory, outDir, 'apitester-config.js');
 }
