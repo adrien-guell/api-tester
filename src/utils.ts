@@ -15,8 +15,10 @@ async function testEndpoint(api: Api, endpoint: Endpoint<any>, showDetails: bool
     let axiosRequestConfig: AxiosRequestConfig = {
         baseURL: api.baseUrl,
         url: endpoint.route,
+        method: endpoint.method,
         headers: api.headers,
         params: Object.assign({}, api.queryParameters, endpoint.queryParameters),
+        data: endpoint.body
     };
 
     if (endpoint.preRequestAction)
@@ -26,9 +28,11 @@ async function testEndpoint(api: Api, endpoint: Endpoint<any>, showDetails: bool
         .request(axiosRequestConfig)
         .then((response) => {
             try {
-                const decodedData = endpoint.decoder(response.data);
-                if (endpoint.postRequestValidation)
-                    endpoint.postRequestValidation(decodedData, response.data);
+                if (endpoint.decoder) {
+                    const decodedData = endpoint.decoder(response.data);
+                    if (endpoint.postRequestValidation)
+                        endpoint.postRequestValidation(decodedData, response.data);
+                }
                 console.log(chalk.green(`${endpoint.route} - Success`));
             } catch (error) {
                 promptFail(endpoint.route, showDetails, logFilename, error);
