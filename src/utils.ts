@@ -22,7 +22,7 @@ export async function testEndpoints(config: ApiTesterConfig, showDetails: boolea
                     try {
                         const decodedData = endpoint.decoder(response.data);
                         if (endpoint.postRequestValidation)
-                            endpoint.postRequestValidation(decodedData);
+                            endpoint.postRequestValidation(decodedData, response.data);
                         console.log(chalk.green(`${endpoint.route} - Success`));
                     } catch (error) {
                         promptFail(endpoint.route, showDetails, logFilename, error);
