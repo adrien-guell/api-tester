@@ -1,16 +1,13 @@
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { promptApiThatIsTested, promptFail } from './ui/uiTools';
+import { promptApiThatIsTested } from './ui/uiTools';
 import { ApiTesterConfig } from './models/ApiTesterConfig';
-import chalk from 'chalk';
-import * as fs from 'fs';
 import { readFileSync } from 'fs';
 import path from 'path';
+import { TestResult } from './models/TestResult';
 import { Api } from './models/Api';
 import { Endpoint } from './models/Endpoint';
 
-async function testEndpoint(api: Api, endpoint: Endpoint<any>, showDetails: boolean) {
-    const logFilename = `apitester_logs\\apitester-log-${Date.now()}.txt`;
-
+async function testEndpoint(api: Api, endpoint: Endpoint<any>, showDetails: boolean): Promise<TestResult> {
     let axiosRequestConfig: AxiosRequestConfig = {
         baseURL: api.baseUrl,
         url: endpoint.route,
@@ -20,40 +17,72 @@ async function testEndpoint(api: Api, endpoint: Endpoint<any>, showDetails: bool
         data: endpoint.body,
     };
 
-    if (endpoint.preRequestAction)
-        axiosRequestConfig = endpoint.preRequestAction(axiosRequestConfig);
+    if (endpoint.preRequestAction) axiosRequestConfig = endpoint.preRequestAction(axiosRequestConfig);
 
-    await axios
+    return axios
         .request(axiosRequestConfig)
         .then((response) => {
             try {
                 if (endpoint.decoder) {
                     const decodedData = endpoint.decoder(response.data);
-                    if (endpoint.postRequestValidation)
-                        endpoint.postRequestValidation(decodedData, response.data);
+                    try {
+                        if (endpoint.postRequestValidation)
+                            endpoint.postRequestValidation(decodedData, response.data);
+                        return {
+                            status: 'decodeError',
+                                route: endpoint.route,
+                            decoderName: endpoint.decoder?.name,
+                            timestamp: Date.now(),
+                            error: error,
+                        };
+                    } catch (error) {
+                        return {
+                            status: 'postRequestError',
+                            route: endpoint.route,
+                            decoderName: endpoint.decoder.name,
+                            decodedData: decodedData,
+                            timestamp: Date.now(),
+                            error: error,
+                        };
+                    }
                 }
-                console.log(chalk.green(`${endpoint.route} - Success`));
+                return {
+                    status: 'decodeError',
+                    route: endpoint.route,
+                    decoderName: endpoint.decoder?.name,
+                    timestamp: Date.now(),
+                    error: error,
+                };
             } catch (error) {
-                promptFail(endpoint.description ?? endpoint.route, showDetails, logFilename, error);
+                return {
+                    status: 'decodeError',
+                    route: endpoint.description ?? endpoint.route,
+                    decoderName: endpoint.decoder?.name,
+                    timestamp: Date.now(),
+                    error: error,
+                };
             }
         })
         .catch((error: Error | AxiosError) => {
-            promptFail(endpoint.description ?? endpoint.route, showDetails, logFilename, error);
+            return {
+                status: 'requestError',
+                route: endpoint.description ?? endpoint.route,
+                decoderName: endpoint.decoder?.name,
+                timestamp: Date.now(),
+                error: error,
+            };
         });
-
-    return axiosRequestConfig;
 }
 
 export async function testEndpoints(config: ApiTesterConfig, showDetails: boolean) {
-    if (!fs.existsSync('apitester_logs')) fs.mkdirSync('apitester_logs');
-
+    const testResults: TestResult[] = [];
     for (const api of config.apisConfig) {
-        promptApiThatIsTested(api.baseUrl);
-
         for (const endpoint of api.endpoints) {
-            testEndpoint(api, endpoint, showDetails);
+            const testResult = await testEndpoint(api, endpoint, showDetails);
+            testResults.push(testResult);
         }
     }
+    return testResults;
 }
 
 export function getConfigLocation() {

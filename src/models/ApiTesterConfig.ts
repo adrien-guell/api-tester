@@ -1,5 +1,5 @@
-import {Api} from "./Api";
+import { Api } from './Api';
 
 export type ApiTesterConfig = {
-    apisConfig: Api[]
-}
+    apisConfig: Api[];
+};
