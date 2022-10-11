@@ -17,7 +17,7 @@ program
         import(configLocation)
             .then((defaultImport) => {
                 const config: ApiTesterConfig = defaultImport.default;
-                testEndpoints(config, options.detail);
+                testEndpoints(config);
             })
             .catch(console.error);
     });
