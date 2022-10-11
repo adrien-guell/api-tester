@@ -1,10 +1,10 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 import { promptApiThatIsTested, promptFail } from './ui/uiTools';
 import { ApiTesterConfig } from './models/ApiTesterConfig';
 import chalk from 'chalk';
 import * as fs from 'fs';
-import {readFileSync} from "fs";
-import path from "path";
+import { readFileSync } from 'fs';
+import path from 'path';
 
 export async function testEndpoints(config: ApiTesterConfig, showDetails: boolean) {
     if (!fs.existsSync('apitester_logs')) fs.mkdirSync('apitester_logs');
@@ -13,11 +13,17 @@ export async function testEndpoints(config: ApiTesterConfig, showDetails: boolea
     for (const api of config.apisConfig) {
         promptApiThatIsTested(api.baseUrl);
         for (const endpoint of api.endpoints) {
+            let axiosRequestConfig: AxiosRequestConfig = {
+                baseURL: api.baseUrl,
+                url: endpoint.route,
+                headers: api.headers,
+                params: Object.assign({}, api.apiKey, endpoint.queryParameters),
+            };
+            if (endpoint.preRequestAction)
+                axiosRequestConfig = endpoint.preRequestAction(axiosRequestConfig);
+
             await axios
-                .get(`${api.baseUrl}${endpoint.route}`, {
-                    headers: api.headers,
-                    params: Object.assign({}, api.apiKey, endpoint.queryParameters),
-                })
+                .request(axiosRequestConfig)
                 .then((response) => {
                     try {
                         const decodedData = endpoint.decoder(response.data);
