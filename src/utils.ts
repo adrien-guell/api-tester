@@ -16,8 +16,9 @@ export async function testEndpoints(config: ApiTesterConfig, showDetails: boolea
             let axiosRequestConfig: AxiosRequestConfig = {
                 baseURL: api.baseUrl,
                 url: endpoint.route,
-                headers: api.headers,
-                params: Object.assign({}, api.apiKey, endpoint.queryParameters),
+                headers: Object.assign({}, api.headers, endpoint.headers),
+                params: Object.assign({}, api.queryParameters, endpoint.queryParameters),
+                data: endpoint.body ?? api.body,
             };
             if (endpoint.preRequestAction)
                 axiosRequestConfig = endpoint.preRequestAction(axiosRequestConfig);
