@@ -55,5 +55,7 @@ Add the apitester-config.ts file to the compiled files in tsconfig.json
 }
 ```
 ___
+Build your code
+
 Run the command `api-tester`
 > Type `api-tester -h` to show command manual.

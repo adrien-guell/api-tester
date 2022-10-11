@@ -1,9 +1,9 @@
 import { DecoderFunction } from "typescript-json-decoder";
-import { Dict } from "./Dict";
+import Dict = NodeJS.Dict;
 
 export type Endpoint<T> = {
     route: string,
     decoder: DecoderFunction<T>,
     postRequestValidation?: (data: T) => void,
-    queryParameters?: Dict
+    queryParameters?: Dict<string[] | string | number | boolean>
 }
