@@ -7,5 +7,7 @@ export type Endpoint<T> = {
     decoder: DecoderFunction<T>,
     preRequestAction?: (axiosConfig: AxiosRequestConfig) => AxiosRequestConfig,
     postRequestValidation?: (data: T, json: any) => void,
-    queryParameters?: Dict<string[] | string | number | boolean>
+    queryParameters?: Dict<string[] | string | number | boolean>,
+    headers?: Record<string, string | number | boolean>;
+    body?: any
 }
