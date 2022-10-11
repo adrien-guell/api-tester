@@ -3,10 +3,8 @@ import { getConfigLocation, testEndpoints } from './src/utils';
 import { ApiTesterConfig } from './src/models/ApiTesterConfig';
 import { program } from 'commander';
 import { Options } from './src/models/Options';
-import * as https from 'https';
-import axios from 'axios';
-import {IncomingMessage} from "http";
 
+export { AxiosRequestConfig } from 'axios';
 export * from './src/models/ApiTesterConfig';
 
 program.name('api-tester');
@@ -24,5 +22,3 @@ program
             .catch(console.error);
     });
 program.parse();
-
-
