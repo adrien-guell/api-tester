@@ -5,6 +5,7 @@ import { program } from 'commander';
 import { Options } from './src/business/models/Options';
 import { getConfigLocation } from './src/utils';
 import { generateLogsDataFromTestResults, getLogPath, writeLogs } from './src/presentation/logger';
+import { stringify } from './src/utils';
 
 export { AxiosRequestConfig, Method } from 'axios';
 export * from './src/business/models/ApiTesterConfig';

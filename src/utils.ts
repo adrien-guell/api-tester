@@ -1,5 +1,6 @@
 import path from 'path';
 import fs, { readFileSync } from 'fs';
+import stringifyObject from 'stringify-object';
 
 export function getMostRecentFilename(directory: string): string {
     const files = fs.readdirSync(directory);
@@ -7,7 +8,7 @@ export function getMostRecentFilename(directory: string): string {
         return fs.statSync(path.join(directory, file)).ctime.getTime();
     });
     const maxCreationTimestamp = Math.max(...filesCreationTimestamp);
-    return files[filesCreationTimestamp.indexOf(maxCreationTimestamp)]
+    return path.join(directory, files[filesCreationTimestamp.indexOf(maxCreationTimestamp)]);
 }
 
 export function getConfigLocation(configFilename: string): string {
@@ -20,4 +21,17 @@ export function getConfigLocation(configFilename: string): string {
     file = file.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
     const outDir = JSON.parse(file).compilerOptions.outDir ?? '';
     return path.join(currentWorkingDirectory, outDir, configFilename);
+}
+
+export const stringify = (data: any) => stringifyObject(data,{
+    indent: '  ',
+    singleQuotes: false
+});
+
+function escapeRegExp(str: string) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+export function replaceAll(str: string, find: string, replace: string) {
+    return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }

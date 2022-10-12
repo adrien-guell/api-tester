@@ -2,5 +2,5 @@
   "logDirectory": "api-tester-logs",
   "logFilename": "log",
   "logMaxSize": 1024,
-  "dateFormat": "dd/mm/yyyy HH:MM:SS.l"
+  "dateFormat": "dd/mm/yyyy HH:MM:ss.l"
 }

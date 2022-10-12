@@ -8,5 +8,5 @@ export type Api = {
     endpoints: Endpoint<any>[];
     headers?: Record<string, string | number | boolean>;
     queryParameters?: Dict<string[] | string | number | boolean>;
-    body?: any
+    data?: any
 };

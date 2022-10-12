@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as config from '../../config.json';
-import { getMostRecentFilename } from '../utils';
+import { getMostRecentFilename, replaceAll, stringify } from '../utils';
 import {
     complementaryDataIsDecodeErrorData, complementaryDataIsPostRequestErrorData,
     complementaryDataIsRequestErrorData, complementaryDataIsSuccessData,
@@ -15,9 +15,11 @@ export function getLogPath(): string {
     if (!fs.existsSync(config.logDirectory)) {
         fs.mkdirSync(config.logDirectory);
     } else {
-        const mostRecentLogPath = getMostRecentFilename(config.logDirectory);
-        if (fs.statSync(mostRecentLogPath).size < config.logMaxSize) {
-            logPath = mostRecentLogPath;
+        if (fs.readdirSync(config.logDirectory).length) {
+            const mostRecentLogPath = getMostRecentFilename(config.logDirectory);
+            if (fs.statSync(mostRecentLogPath).size < config.logMaxSize) {
+                logPath = mostRecentLogPath;
+            }
         }
     }
     return logPath;
@@ -50,16 +52,16 @@ export function generateLogsDataFromTestResults<T>(testResults: TestResult<T>[])
                 {
                     error: complementaryData.error.message,
                     stacktrace: complementaryData.error.stack,
-                    decodedData: JSON.stringify(complementaryData.decodedData, null, 2),
+                    decodedData: stringify(complementaryData.decodedData),
                 } : {
                     error: complementaryData.error,
                     stacktrace: 'Cannot retrieve stacktrace',
-                    decodedData: JSON.stringify(complementaryData.decodedData, null, 2),
+                    decodedData: stringify(complementaryData.decodedData),
                 };
         } else if (complementaryDataIsSuccessData(complementaryData)) {
             complementaryBody = {
-                decodedData: JSON.stringify(complementaryData.decodedData, null, 2),
-                axiosResponse: JSON.stringify(complementaryData.axiosResponse, null, 2),
+                decodedData: stringify(complementaryData.decodedData),
+                axiosResponse: stringify(complementaryData.axiosResponse),
             };
         }
 
@@ -71,6 +73,7 @@ export function generateLogsDataFromTestResults<T>(testResults: TestResult<T>[])
             decoderName: testResult.decoderName ?? 'No decoder given',
             ...complementaryBody,
         };
+        // console.log(stringify(body))
 
         return {
             dateTime: dateTime,
@@ -95,10 +98,16 @@ export function logsDataToString(logsData: LogData[]): string {
 
     logsData.forEach(logData => {
         const fullTitle = `${logData.title}${' '.repeat(maxTitleLength - logData.title.length)}`;
-        let body = JSON.stringify(logData.body, null, 2);
-        body = body.substring(0, 1).substring(body.length - 3, body.length - 1);
-        body = body.replace('\n', `\n${' '.repeat(titleIndentation)}`);
-        str += `${logData.dateTime} ${fullTitle}: ${logData.resultDescription}\n${body}\n`;
+        let body = stringify(logData.body);
+        console.log('a');
+        console.log(stringify(body));
+        body = body.substring(1, body.length).substring(0, body.length - 3);
+        console.log('b');
+        console.log(stringify(body));
+        body = replaceAll(body, '\n', `\n${' '.repeat(titleIndentation)}`);
+        console.log('c');
+        console.log(stringify(body));
+        str += `${logData.dateTime} ${fullTitle}: ${logData.resultDescription}${body}\n\n`;
     });
 
     return str;

@@ -18,10 +18,12 @@
   },
   "dependencies": {
     "@types/dateformat": "^5.0.0",
+    "@types/stringify-object": "^3.3.0",
     "axios": "^0.27.2",
     "chalk": "^4.1.2",
     "commander": "^9.4.1",
-    "dateformat": "^5.0.3",
+    "dateformat": "^4.6.3",
+    "stringify-object": "^3.3.0",
     "typescript-json-decoder": "^1.0.10"
   },
   "name": "decoder-api-tester",

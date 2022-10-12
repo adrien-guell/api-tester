@@ -8,6 +8,7 @@ import {
 import { Api } from './models/Api';
 import { Endpoint } from './models/Endpoint';
 import { DecoderFunction } from 'typescript-json-decoder';
+import { stringify } from '../utils';
 
 function testPostRequestValidation<T>(
     postRequestValidation: (data: T, json: any) => void,
@@ -59,7 +60,6 @@ function testResponse<T>(endpoint: Endpoint<any>, response: AxiosResponse): Comp
                 response,
             );
         }
-
         return testDecoderResult;
     } else {
         return {
@@ -73,10 +73,10 @@ async function testEndpoint<T>(api: Api, endpoint: Endpoint<any>): Promise<TestR
     let axiosRequestConfig: AxiosRequestConfig = {
         baseURL: api.baseUrl,
         url: endpoint.route,
-        method: endpoint.method,
-        headers: api.headers,
+        method: endpoint.method ?? api.method,
+        headers: Object.assign({}, api.headers, endpoint.headers),
         params: Object.assign({}, api.queryParameters, endpoint.queryParameters),
-        data: endpoint.data,
+        data: endpoint.data ?? api.data
     };
 
     if (endpoint.preRequestAction)
@@ -88,9 +88,9 @@ async function testEndpoint<T>(api: Api, endpoint: Endpoint<any>): Promise<TestR
             const complementaryData = testResponse(endpoint, response);
             return {
                 description: endpoint.description,
-                baseUrl: api.baseUrl,
-                route: endpoint.route,
-                method: endpoint.method,
+                baseUrl: axiosRequestConfig.baseURL,
+                route: axiosRequestConfig.url,
+                method: axiosRequestConfig.method,
                 decoderName: endpoint.decoder?.name,
                 timestamp: Date.now(),
                 complementaryData: complementaryData,
@@ -99,9 +99,9 @@ async function testEndpoint<T>(api: Api, endpoint: Endpoint<any>): Promise<TestR
         .catch((error: AxiosError) => {
             return {
                 description: endpoint.description,
-                baseUrl: api.baseUrl,
-                route: endpoint.route,
-                method: endpoint.method,
+                baseUrl: axiosRequestConfig.baseURL,
+                route: axiosRequestConfig.url,
+                method: axiosRequestConfig.method,
                 decoderName: endpoint.decoder?.name,
                 timestamp: Date.now(),
                 complementaryData: {
