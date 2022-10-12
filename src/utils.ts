@@ -35,11 +35,11 @@ async function testEndpoint(api: Api, endpoint: Endpoint<any>, showDetails: bool
                 }
                 console.log(chalk.green(`${endpoint.route} - Success`));
             } catch (error) {
-                promptFail(endpoint.route, showDetails, logFilename, error);
+                promptFail(endpoint.description??endpoint.route, showDetails, logFilename, error);
             }
         })
         .catch((error: Error | AxiosError) => {
-            promptFail(endpoint.route, showDetails, logFilename, error);
+            promptFail(endpoint.description??endpoint.route, showDetails, logFilename, error);
         });
 
     return axiosRequestConfig;

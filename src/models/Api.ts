@@ -9,5 +9,5 @@ export type Api = {
     headers?: Record<string, string | number | boolean>;
     queryParameters?: Dict<string[] | string | number | boolean>;
     body?:any,
-    description?:string
+    
 };

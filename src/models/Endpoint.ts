@@ -10,5 +10,6 @@ export type Endpoint<T> = {
     postRequestValidation?: (data: T, json: any) => void,
     queryParameters?: Dict<string[] | string | number | boolean>,
     headers?: Record<string, string | number | boolean>;
-    body?: any
+    body?: any,
+    description?:string
 }
