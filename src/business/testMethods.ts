@@ -12,7 +12,7 @@ import { DecoderFunction } from 'typescript-json-decoder';
 function testPostRequestValidation<T>(
     postRequestValidation: (data: T, json: any) => void,
     decodedData: T,
-    response: AxiosResponse
+    response: AxiosResponse,
 ): ComplementaryData<T> {
     try {
         postRequestValidation(decodedData, response.data);
@@ -56,7 +56,7 @@ function testResponse<T>(endpoint: Endpoint<any>, response: AxiosResponse): Comp
             return testPostRequestValidation(
                 endpoint.postRequestValidation,
                 testDecoderResult.decodedData,
-                response
+                response,
             );
         }
 
@@ -90,7 +90,7 @@ async function testEndpoint<T>(api: Api, endpoint: Endpoint<any>): Promise<TestR
                 route: endpoint.route,
                 decoderName: endpoint.decoder?.name,
                 timestamp: Date.now(),
-                complementaryData: complementaryData
+                complementaryData: complementaryData,
             } as TestResult<T>;
         })
         .catch((error: AxiosError) => {
@@ -100,10 +100,10 @@ async function testEndpoint<T>(api: Api, endpoint: Endpoint<any>): Promise<TestR
                 timestamp: Date.now(),
                 complementaryData: {
                     status: 'requestError',
-                    error: error
-                }
+                    error: error,
+                },
             } as TestResult<T>;
-        })
+        });
 }
 
 export async function testEndpoints(config: ApiTesterConfig): Promise<TestResult<any>[]> {
