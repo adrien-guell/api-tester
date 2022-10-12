@@ -76,7 +76,7 @@ async function testEndpoint<T>(api: Api, endpoint: Endpoint<any>): Promise<TestR
         method: endpoint.method,
         headers: api.headers,
         params: Object.assign({}, api.queryParameters, endpoint.queryParameters),
-        data: endpoint.body,
+        data: endpoint.data,
     };
 
     if (endpoint.preRequestAction)
@@ -87,7 +87,10 @@ async function testEndpoint<T>(api: Api, endpoint: Endpoint<any>): Promise<TestR
         .then((response) => {
             const complementaryData = testResponse(endpoint, response);
             return {
+                description: endpoint.description,
+                baseUrl: api.baseUrl,
                 route: endpoint.route,
+                method: endpoint.method,
                 decoderName: endpoint.decoder?.name,
                 timestamp: Date.now(),
                 complementaryData: complementaryData,
@@ -95,7 +98,10 @@ async function testEndpoint<T>(api: Api, endpoint: Endpoint<any>): Promise<TestR
         })
         .catch((error: AxiosError) => {
             return {
+                description: endpoint.description,
+                baseUrl: api.baseUrl,
                 route: endpoint.route,
+                method: endpoint.method,
                 decoderName: endpoint.decoder?.name,
                 timestamp: Date.now(),
                 complementaryData: {

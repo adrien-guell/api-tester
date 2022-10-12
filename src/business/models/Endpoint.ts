@@ -3,6 +3,7 @@ import Dict = NodeJS.Dict;
 import { AxiosRequestConfig, Method } from 'axios';
 
 export type Endpoint<T> = {
+    description?: string;
     route: string;
     method?: Method;
     decoder?: DecoderFunction<T>;
@@ -10,6 +11,5 @@ export type Endpoint<T> = {
     postRequestValidation?: (data: T, json: any) => void;
     queryParameters?: Dict<string[] | string | number | boolean>;
     headers?: Record<string, string | number | boolean>;
-    body?: any;
-    description?: string;
+    data?: any;
 }
