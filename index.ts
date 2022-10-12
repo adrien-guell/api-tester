@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-import { getConfigLocation, testEndpoints } from './src/utils';
+import { testEndpoints } from './src/testMethods';
 import { ApiTesterConfig } from './src/models/ApiTesterConfig';
 import { program } from 'commander';
 import { Options } from './src/models/Options';
+import {getConfigLocation} from "./src/utils";
 
 export { AxiosRequestConfig, Method } from 'axios';
 export * from './src/models/ApiTesterConfig';

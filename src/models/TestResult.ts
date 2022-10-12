@@ -1,18 +1,18 @@
 import { AxiosError, AxiosResponse } from 'axios';
 
-export type TestResult = {
+export type TestResult<T> = {
     status: 'requestError' | 'decodeError' | 'postRequestError' | 'success';
     route?: string;
     decoderName?: string;
     timestamp: number;
-    complementaryData: ComplementaryData;
+    complementaryData: ComplementaryData<T>;
 };
 
-export type ComplementaryData =
+export type ComplementaryData<T> =
     | RequestErrorData
     | DecodeErrorData
-    | PostRequestErrorData
-    | SuccessData;
+    | PostRequestErrorData<T>
+    | SuccessData<T>;
 
 export type RequestErrorData = {
     status: 'requestError';
@@ -24,18 +24,18 @@ export type DecodeErrorData = {
     error: any;
 };
 
-export type PostRequestErrorData = {
+export type PostRequestErrorData<T> = {
     status: 'postRequestError';
-    decodedData: any;
+    decodedData: T;
     error: any;
 };
 
-export type SuccessData = {
+export type SuccessData<T> = {
     status: 'success';
-    decodedData?: any;
+    decodedData?: T;
     axiosResponse: AxiosResponse;
 };
 
-export function complementaryDataIsSuccessData(complementaryData: ComplementaryData): complementaryData is SuccessData {
+export function complementaryDataIsSuccessData<T>(complementaryData: ComplementaryData<T>): complementaryData is SuccessData<T> {
     return complementaryData.status == 'success';
 }
