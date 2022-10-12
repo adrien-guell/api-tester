@@ -3,11 +3,9 @@ import { ApiTesterConfig } from './models/ApiTesterConfig';
 import { readFileSync } from 'fs';
 import path from 'path';
 import {
-    SpecialData,
+    ComplementaryData,
     TestResult,
-    TestResultDecodeError,
-    testResultIsSuccess,
-    TestResultRequestError,
+    complementaryDataIsSuccessData,
 } from './models/TestResult';
 import { Api } from './models/Api';
 import { Endpoint } from './models/Endpoint';
@@ -17,7 +15,7 @@ function testPostRequestValidation<T>(
     postRequestValidation: (data: T, json: any) => void,
     decodedData: T,
     response: AxiosResponse
-): SpecialData {
+): ComplementaryData {
     try {
         postRequestValidation(decodedData, response.data);
         return {
@@ -33,7 +31,7 @@ function testPostRequestValidation<T>(
     }
 }
 
-function testDecoder<T>(decoder: DecoderFunction<T>, response: AxiosResponse): SpecialData {
+function testDecoder<T>(decoder: DecoderFunction<T>, response: AxiosResponse): ComplementaryData {
     try {
         const decodedData = decoder(response.data);
         return {
@@ -49,10 +47,10 @@ function testDecoder<T>(decoder: DecoderFunction<T>, response: AxiosResponse): S
     }
 }
 
-function testResponse(endpoint: Endpoint<any>, response: AxiosResponse): SpecialData {
+function testResponse(endpoint: Endpoint<any>, response: AxiosResponse): ComplementaryData {
     if (endpoint.decoder) {
         const testDecoderResult = testDecoder(endpoint.decoder, response);
-        if (!testResultIsSuccess(testDecoderResult)) {
+        if (!complementaryDataIsSuccessData(testDecoderResult)) {
             return testDecoderResult;
         }
 
@@ -86,21 +84,29 @@ async function testEndpoint(api: Api, endpoint: Endpoint<any>): Promise<TestResu
     if (endpoint.preRequestAction)
         axiosRequestConfig = endpoint.preRequestAction(axiosRequestConfig);
 
+    let complementaryData: ComplementaryData;
     return axios
         .request(axiosRequestConfig)
         .then((response) => {
-            return testResponse(endpoint, response);
+            const complementaryData = testResponse(endpoint, response);
+            return {
+                route: endpoint.route,
+                decoderName: endpoint.decoder?.name,
+                timestamp: Date.now(),
+                complementaryData: complementaryData
+            } as TestResult;
         })
         .catch((error: AxiosError) => {
-            const result: TestResultRequestError = {
-                status: 'requestError',
+            return {
                 route: endpoint.description ?? endpoint.route,
                 decoderName: endpoint.decoder?.name,
                 timestamp: Date.now(),
-                error: error,
-            };
-            return result;
-        });
+                complementaryData: {
+                    status: 'requestError',
+                    error: error
+                }
+            } as TestResult;
+        })
 }
 
 export async function testEndpoints(config: ApiTesterConfig): Promise<TestResult[]> {

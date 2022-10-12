@@ -5,37 +5,37 @@ export type TestResult = {
     route?: string;
     decoderName?: string;
     timestamp: number;
-    special: SpecialData;
+    complementaryData: ComplementaryData;
 };
 
-export type SpecialData =
-    | TestResultRequestError
-    | TestResultDecodeError
-    | TestResultPostRequestError
-    | TestResultSuccess;
+export type ComplementaryData =
+    | RequestErrorData
+    | DecodeErrorData
+    | PostRequestErrorData
+    | SuccessData;
 
-export type TestResultRequestError = {
+export type RequestErrorData = {
     status: 'requestError';
     error: AxiosError;
 };
 
-export type TestResultDecodeError = {
+export type DecodeErrorData = {
     status: 'decodeError';
     error: any;
 };
 
-export type TestResultPostRequestError = {
+export type PostRequestErrorData = {
     status: 'postRequestError';
     decodedData: any;
     error: any;
 };
 
-export type TestResultSuccess = {
+export type SuccessData = {
     status: 'success';
     decodedData?: any;
     axiosResponse: AxiosResponse;
 };
 
-export function testResultIsSuccess(testResult: SpecialData): testResult is TestResultSuccess {
-    return testResult.status == 'success';
+export function complementaryDataIsSuccessData(complementaryData: ComplementaryData): complementaryData is SuccessData {
+    return complementaryData.status == 'success';
 }
