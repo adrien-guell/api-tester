@@ -8,7 +8,6 @@ import path from 'path';
 import { Api } from './models/Api';
 import { Endpoint } from './models/Endpoint';
 
-
 async function testEndpoint(api: Api, endpoint: Endpoint<any>, showDetails: boolean) {
     const logFilename = `apitester_logs\\apitester-log-${Date.now()}.txt`;
 
@@ -18,7 +17,7 @@ async function testEndpoint(api: Api, endpoint: Endpoint<any>, showDetails: bool
         method: endpoint.method,
         headers: api.headers,
         params: Object.assign({}, api.queryParameters, endpoint.queryParameters),
-        data: endpoint.body
+        data: endpoint.body,
     };
 
     if (endpoint.preRequestAction)
@@ -35,11 +34,11 @@ async function testEndpoint(api: Api, endpoint: Endpoint<any>, showDetails: bool
                 }
                 console.log(chalk.green(`${endpoint.route} - Success`));
             } catch (error) {
-                promptFail(endpoint.description??endpoint.route, showDetails, logFilename, error);
+                promptFail(endpoint.description ?? endpoint.route, showDetails, logFilename, error);
             }
         })
         .catch((error: Error | AxiosError) => {
-            promptFail(endpoint.description??endpoint.route, showDetails, logFilename, error);
+            promptFail(endpoint.description ?? endpoint.route, showDetails, logFilename, error);
         });
 
     return axiosRequestConfig;
