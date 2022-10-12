@@ -4,10 +4,11 @@ import { getMostRecentFilename } from '../utils';
 import {
     complementaryDataIsDecodeErrorData, complementaryDataIsPostRequestErrorData,
     complementaryDataIsRequestErrorData, complementaryDataIsSuccessData,
-    ResultStatus,
     TestResult,
 } from '../business/models/TestResult';
 import dateFormat from 'dateformat';
+import { resultStatusDict } from './string';
+import { appendFileSync } from 'fs';
 
 export function getLogPath(): string {
     let logPath = `${config.logDirectory}\\${config.logFilename}${Date.now()}.txt`;
@@ -22,30 +23,11 @@ export function getLogPath(): string {
     return logPath;
 }
 
-const resultStatusMap: Record<ResultStatus, { title: string, description: string }> = {
-    'requestError': {
-        title: 'ERROR: REQUEST',
-        description: 'An error occurred while sending the request',
-    },
-    'decodeError': {
-        title: 'ERROR: DECODE',
-        description: 'An error occurred while decoding the received data',
-    },
-    'postRequestError': {
-        title: 'ERROR: POST-REQUEST',
-        description: 'An error occurred while executing the post-request validation function',
-    },
-    'success': {
-        title: 'SUCCESS',
-        description: 'Test finished successfully',
-    },
-};
-
 export function generateLogsDataFromTestResults<T>(testResults: TestResult<T>[]): LogData[] {
     return testResults.map((testResult: TestResult<T>) => {
         const dateTime = dateFormat(new Date(testResult.timestamp), config.dateFormat);
-        const title = resultStatusMap[testResult.status].title;
-        const description = resultStatusMap[testResult.status].description;
+        const title = resultStatusDict[testResult.complementaryData.status]?.title ?? 'UNKNOWN';
+        const description = resultStatusDict[testResult.complementaryData.status]?.description ?? 'UNKNOWN';
 
         const complementaryData = testResult.complementaryData;
         let complementaryBody: any;
@@ -56,28 +38,28 @@ export function generateLogsDataFromTestResults<T>(testResults: TestResult<T>[])
             };
         } else if (complementaryDataIsDecodeErrorData(complementaryData)) {
             complementaryBody = complementaryData.error instanceof Error ?
-                 {
+                {
                     error: complementaryData.error.message,
-                    stacktrace: complementaryData.error.stack
+                    stacktrace: complementaryData.error.stack,
                 } : {
                     error: complementaryData.error,
-                    stacktrace: 'Cannot retrieve stacktrace'
-                }
+                    stacktrace: 'Cannot retrieve stacktrace',
+                };
         } else if (complementaryDataIsPostRequestErrorData(complementaryData)) {
             complementaryBody = complementaryData.error instanceof Error ?
                 {
                     error: complementaryData.error.message,
                     stacktrace: complementaryData.error.stack,
-                    decodedData: JSON.stringify(complementaryData.decodedData, null, 2)
+                    decodedData: JSON.stringify(complementaryData.decodedData, null, 2),
                 } : {
                     error: complementaryData.error,
                     stacktrace: 'Cannot retrieve stacktrace',
-                    decodedData: JSON.stringify(complementaryData.decodedData, null, 2)
-                }
+                    decodedData: JSON.stringify(complementaryData.decodedData, null, 2),
+                };
         } else if (complementaryDataIsSuccessData(complementaryData)) {
             complementaryBody = {
                 decodedData: JSON.stringify(complementaryData.decodedData, null, 2),
-                axiosResponse: JSON.stringify(complementaryData.axiosResponse, null, 2)
+                axiosResponse: JSON.stringify(complementaryData.axiosResponse, null, 2),
             };
         }
 
@@ -99,8 +81,27 @@ export function generateLogsDataFromTestResults<T>(testResults: TestResult<T>[])
     });
 }
 
-export function writeLog(logsData: LogData[], logPath: string) {
+export function writeLogs(logsData: LogData[], logPath: string) {
+    const logString = logsDataToString(logsData);
+    appendFileSync(logPath, logString);
+}
 
+export function logsDataToString(logsData: LogData[]): string {
+    let str = '';
+    if (!logsData.length) return str;
+
+    const maxTitleLength = Math.max(...(logsData.map(logData => logData.title.length)));
+    const titleIndentation = maxTitleLength + logsData[0].dateTime.length + 1;
+
+    logsData.forEach(logData => {
+        const fullTitle = `${logData.title}${' '.repeat(maxTitleLength - logData.title.length)}`;
+        let body = JSON.stringify(logData.body, null, 2);
+        body = body.substring(0, 1).substring(body.length - 3, body.length - 1);
+        body = body.replace('\n', `\n${' '.repeat(titleIndentation)}`);
+        str += `${logData.dateTime} ${fullTitle}: ${logData.resultDescription}\n${body}\n`;
+    });
+
+    return str;
 }
 
 export type LogData = {

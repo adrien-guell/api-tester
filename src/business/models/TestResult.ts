@@ -3,7 +3,6 @@ import { AxiosError, AxiosResponse, Method } from 'axios';
 export type ResultStatus = 'requestError' | 'decodeError' | 'postRequestError' | 'success';
 
 export type TestResult<T> = {
-    status: ResultStatus;
     description?: string;
     baseUrl: string;
     route: string;

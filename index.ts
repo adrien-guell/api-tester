@@ -4,6 +4,7 @@ import { ApiTesterConfig } from './src/business/models/ApiTesterConfig';
 import { program } from 'commander';
 import { Options } from './src/business/models/Options';
 import { getConfigLocation } from './src/utils';
+import { generateLogsDataFromTestResults, getLogPath, writeLogs } from './src/presentation/logger';
 
 export { AxiosRequestConfig, Method } from 'axios';
 export * from './src/business/models/ApiTesterConfig';
@@ -16,9 +17,11 @@ program
     .action(async (options: Options) => {
         const configLocation = options.configLocation ?? getConfigLocation('apitester-config.js');
         import(configLocation)
-            .then((defaultImport) => {
+            .then(async (defaultImport) => {
                 const config: ApiTesterConfig = defaultImport.default;
-                testEndpoints(config);
+                const testResults = await testEndpoints(config);
+                const logsData = generateLogsDataFromTestResults(testResults);
+                writeLogs(logsData, getLogPath());
             })
             .catch(console.error);
     })
