@@ -9,6 +9,8 @@ import {
 import dateFormat from 'dateformat';
 import { resultStatusDict } from './string';
 import { appendFileSync } from 'fs';
+import { LogData } from './LogData';
+const {format} = require('@redtea/format-axios-error');
 
 export function getLogPath(): string {
     let logPath = `${config.logDirectory}\\${config.logFilename}${Date.now()}.txt`;
@@ -25,7 +27,7 @@ export function getLogPath(): string {
     return logPath;
 }
 
-export function generateLogsDataFromTestResults<T>(testResults: TestResult<T>[]): LogData[] {
+export function testResultsToLogsData<T>(testResults: TestResult<T>[]): LogData[] {
     return testResults.map((testResult: TestResult<T>) => {
         const dateTime = dateFormat(new Date(testResult.timestamp), config.dateFormat);
         const title = resultStatusDict[testResult.complementaryData.status]?.title ?? 'UNKNOWN';
@@ -36,7 +38,7 @@ export function generateLogsDataFromTestResults<T>(testResults: TestResult<T>[])
         if (complementaryDataIsRequestErrorData(complementaryData)) {
             complementaryBody = {
                 error: complementaryData.error.message,
-                stacktrace: complementaryData.error.stack,
+                stacktrace: format(complementaryData.error),
             };
         } else if (complementaryDataIsDecodeErrorData(complementaryData)) {
             complementaryBody = complementaryData.error instanceof Error ?
@@ -50,18 +52,21 @@ export function generateLogsDataFromTestResults<T>(testResults: TestResult<T>[])
         } else if (complementaryDataIsPostRequestErrorData(complementaryData)) {
             complementaryBody = complementaryData.error instanceof Error ?
                 {
+                    decodedData: complementaryData.decodedData,
                     error: complementaryData.error.message,
                     stacktrace: complementaryData.error.stack,
-                    decodedData: stringify(complementaryData.decodedData),
                 } : {
+                    decodedData: complementaryData.decodedData,
                     error: complementaryData.error,
                     stacktrace: 'Cannot retrieve stacktrace',
-                    decodedData: stringify(complementaryData.decodedData),
                 };
         } else if (complementaryDataIsSuccessData(complementaryData)) {
             complementaryBody = {
-                decodedData: stringify(complementaryData.decodedData),
-                axiosResponse: stringify(complementaryData.axiosResponse),
+                decodedData: complementaryData.decodedData,
+                rawData: complementaryData.axiosResponse.data,
+                headers: complementaryData.axiosResponse.headers,
+                status: complementaryData.axiosResponse.status,
+                statusText: complementaryData.axiosResponse.statusText,
             };
         }
 
@@ -73,7 +78,6 @@ export function generateLogsDataFromTestResults<T>(testResults: TestResult<T>[])
             decoderName: testResult.decoderName ?? 'No decoder given',
             ...complementaryBody,
         };
-        // console.log(stringify(body))
 
         return {
             dateTime: dateTime,
@@ -82,11 +86,6 @@ export function generateLogsDataFromTestResults<T>(testResults: TestResult<T>[])
             body: body,
         } as LogData;
     });
-}
-
-export function writeLogs(logsData: LogData[], logPath: string) {
-    const logString = logsDataToString(logsData);
-    appendFileSync(logPath, logString);
 }
 
 export function logsDataToString(logsData: LogData[]): string {
@@ -99,67 +98,17 @@ export function logsDataToString(logsData: LogData[]): string {
     logsData.forEach(logData => {
         const fullTitle = `${logData.title}${' '.repeat(maxTitleLength - logData.title.length)}`;
         let body = stringify(logData.body);
-        console.log('a');
-        console.log(stringify(body));
         body = body.substring(1, body.length).substring(0, body.length - 3);
-        console.log('b');
-        console.log(stringify(body));
         body = replaceAll(body, '\n', `\n${' '.repeat(titleIndentation)}`);
-        console.log('c');
-        console.log(stringify(body));
         str += `${logData.dateTime} ${fullTitle}: ${logData.resultDescription}${body}\n\n`;
     });
 
     return str;
 }
 
-export type LogData = {
-    dateTime: string;
-    title: string;
-    resultDescription: string;
-    body: any;
+export function writeLogs(testResults: TestResult<any>[]) {
+    const logPath = getLogPath();
+    const logsData = testResultsToLogsData(testResults);
+    const logString = logsDataToString(logsData);
+    appendFileSync(logPath, logString);
 }
-
-
-/**
- *
- * 01/03/2022 08:51:01.562 SUCCESS            : Test finished successfully
- *                                              description: my descritpion
- *                                              route: api/route
- *                                              decoder: myDecoder
- *                                              decodedData: {
- *                                                  truc: "tata",
- *                                                  machin: "toto"
- *                                              }
- *                                              axiosResponse: {
- *                                                  ...........
- *                                              }
- * 01/03/2022 08:51:01.562 ERROR: REQUEST     : Error during request
- *                                              description: my descritpion
- *                                              route: api/route
- *                                              error: a text with the error
- *                                              stacktrace: {
- *                                                  ...........
- *                                              }
- * 01/03/2022 08:51:01.562 ERROR: DECODE      : Error during decoding
- *                                              description: my descritpion
- *                                              route: api/route
- *                                              decoder: myDecoder
- *                                              error: a text with the error
- *                                              stacktrace: {
- *                                                ...........
- *                                              }
- * 01/03/2022 08:51:01.562 ERROR: POST-REQUEST: Error during post-request validation
- *                                              description: my descritpion
- *                                              route: api/route
- *                                              decoder: myDecoder
- *                                              decodedData: {
- *                                                  truc: "tata",
- *                                                  machin: "toto"
- *                                              }
- *                                              error: a text with the error
- *                                              stacktrace: {
- *                                                  ...........
- *                                              }
- *
- */

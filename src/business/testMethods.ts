@@ -8,7 +8,6 @@ import {
 import { Api } from './models/Api';
 import { Endpoint } from './models/Endpoint';
 import { DecoderFunction } from 'typescript-json-decoder';
-import { stringify } from '../utils';
 
 function testPostRequestValidation<T>(
     postRequestValidation: (data: T, json: any) => void,
@@ -69,11 +68,11 @@ function testResponse<T>(endpoint: Endpoint<any>, response: AxiosResponse): Comp
     }
 }
 
-async function testEndpoint<T>(api: Api, endpoint: Endpoint<any>): Promise<TestResult<T>> {
+async function testEndpoint<T>(api: Api, endpoint: Endpoint<T>): Promise<TestResult<T>> {
     let axiosRequestConfig: AxiosRequestConfig = {
         baseURL: api.baseUrl,
         url: endpoint.route,
-        method: endpoint.method ?? api.method,
+        method: endpoint.method ?? api.method ?? 'get',
         headers: Object.assign({}, api.headers, endpoint.headers),
         params: Object.assign({}, api.queryParameters, endpoint.queryParameters),
         data: endpoint.data ?? api.data

@@ -4,7 +4,7 @@ import { ApiTesterConfig } from './src/business/models/ApiTesterConfig';
 import { program } from 'commander';
 import { Options } from './src/business/models/Options';
 import { getConfigLocation } from './src/utils';
-import { generateLogsDataFromTestResults, getLogPath, writeLogs } from './src/presentation/logger';
+import { testResultsToLogsData, getLogPath, writeLogs } from './src/presentation/logger';
 import { stringify } from './src/utils';
 
 export { AxiosRequestConfig, Method } from 'axios';
@@ -21,8 +21,7 @@ program
             .then(async (defaultImport) => {
                 const config: ApiTesterConfig = defaultImport.default;
                 const testResults = await testEndpoints(config);
-                const logsData = generateLogsDataFromTestResults(testResults);
-                writeLogs(logsData, getLogPath());
+                writeLogs(testResults);
             })
             .catch(console.error);
     })
