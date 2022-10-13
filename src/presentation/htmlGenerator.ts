@@ -14,6 +14,11 @@ export type HtmlReportData = {
     dateTime: string,
 }
 
+// TODO Generate htmlReportData from TestResults
+// TODO Mettre la balise html et head
+// TODO ajouter l'option report avec un argument qui donne le path ou save le report
+// TODO appeler le generateur de report dans index.ts quand l'option n'est pas undefined
+
 export function getBody(htmlReportsData: HtmlReportData[]) {
     const htmlReportsMap = groupBy(htmlReportsData, (htmlReportData) => htmlReportData.baseUrl)
     let html = ""
@@ -50,17 +55,13 @@ export function getRow(htmlReportData: HtmlReportData) {
         TableData(
             Div(
                 resultStatusDict[htmlReportData.status]?.title,
-                {
-                    class: resultStatusDict[htmlReportData.status]?.class
-                }
+                { class: resultStatusDict[htmlReportData.status]?.class }
             )
         ),
         TableData(
             Div(
                 htmlReportData.method.toUpperCase(),
-                {
-                    class: htmlReportData.method
-                }
+                { class: htmlReportData.method }
             )
         ),
         TableData(htmlReportData.error),
@@ -79,26 +80,27 @@ export function attrToString(attributes?: Dict<string>) {
     return stringAttr;
 }
 
+
 export const Div = (content?: string, attributes?: Dict<string>) =>
     `<div${attrToString(attributes)}>${content}</div>`;
 
 export const TableData = (content?: string, attributes?: Dict<string>) =>
-    `<td${attrToString(attributes)}>${content}<td/>`;
+    `<td${attrToString(attributes)}>${content}</td>`;
 
 export const TableRow = (tableHeadersOrData: string[], attributes?: Dict<string>) =>
-    `<tr${attrToString(attributes)}>${tableHeadersOrData.join('')}<tr/>`
+    `<tr${attrToString(attributes)}>${tableHeadersOrData.join('')}</tr>`
 
 export const TableBody = (tableRows: string[], attributes?: Dict<string>) =>
-    `<tbody${attrToString(attributes)}>${tableRows.join('')}<tbody/>`
+    `<tbody${attrToString(attributes)}>${tableRows.join('')}</tbody>`
 
 export const TableHead = (tableRow: string, attributes?: Dict<string>) =>
-    `<thead${attrToString(attributes)}>${tableRow}<thead/>`
+    `<thead${attrToString(attributes)}>${tableRow}</thead>`
 
 export const TableHeader = (content: string, attributes?: Dict<string>) =>
-    `<th${attrToString(attributes)}>${content}<th/>`;
+    `<th${attrToString(attributes)}>${content}</th>`;
 
 export const Table = (tableHead: string, tableBody: string, attributes?: Dict<string>) =>
-    `<thead${attrToString(attributes)}>${tableHead}${tableBody}<thead/>`
+    `<thead${attrToString(attributes)}>${tableHead}${tableBody}</thead>`
 
 export const Header1 = (content?: string, attributes?: Dict<string>) =>
     `<h1${attrToString(attributes)}>${content}</h1>`;
