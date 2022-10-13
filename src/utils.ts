@@ -35,3 +35,17 @@ function escapeRegExp(str: string) {
 export function replaceAll(str: string, find: string, replace: string) {
     return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
+
+export function groupBy<T, K>(list: T[], keyGetter: (data: T) => K) {
+    const map = new Map<K, T[]>();
+    list.forEach((item) => {
+        const key = keyGetter(item);
+        const collection = map.get(key);
+        if (!collection) {
+            map.set(key, [item]);
+        } else {
+            collection.push(item);
+        }
+    });
+    return map;
+}

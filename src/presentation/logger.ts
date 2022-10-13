@@ -7,7 +7,7 @@ import {
     TestResult,
 } from '../business/models/TestResult';
 import dateFormat from 'dateformat';
-import { resultStatusDict } from './string';
+import { resultStatusDict } from './strings';
 import { appendFileSync } from 'fs';
 import { LogData } from './LogData';
 const {format} = require('@redtea/format-axios-error');
@@ -75,7 +75,6 @@ export function testResultsToLogsData<T>(testResults: TestResult<T>[]): LogData[
             baseUrl: testResult.baseUrl,
             route: testResult.route,
             method: testResult.method,
-            decoderName: testResult.decoderName ?? 'No decoder given',
             ...complementaryBody,
         };
 

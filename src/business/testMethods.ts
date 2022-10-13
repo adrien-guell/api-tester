@@ -75,7 +75,7 @@ async function testEndpoint<T>(api: Api, endpoint: Endpoint<T>): Promise<TestRes
         method: endpoint.method ?? api.method ?? 'get',
         headers: Object.assign({}, api.headers, endpoint.headers),
         params: Object.assign({}, api.queryParameters, endpoint.queryParameters),
-        data: endpoint.data ?? api.data
+        data: endpoint.data ?? api.data,
     };
 
     if (endpoint.preRequestAction)
@@ -90,7 +90,6 @@ async function testEndpoint<T>(api: Api, endpoint: Endpoint<T>): Promise<TestRes
                 baseUrl: axiosRequestConfig.baseURL,
                 route: axiosRequestConfig.url,
                 method: axiosRequestConfig.method,
-                decoderName: endpoint.decoder?.name,
                 timestamp: Date.now(),
                 complementaryData: complementaryData,
             } as TestResult<T>;
@@ -101,7 +100,6 @@ async function testEndpoint<T>(api: Api, endpoint: Endpoint<T>): Promise<TestRes
                 baseUrl: axiosRequestConfig.baseURL,
                 route: axiosRequestConfig.url,
                 method: axiosRequestConfig.method,
-                decoderName: endpoint.decoder?.name,
                 timestamp: Date.now(),
                 complementaryData: {
                     status: 'requestError',
@@ -112,12 +110,11 @@ async function testEndpoint<T>(api: Api, endpoint: Endpoint<T>): Promise<TestRes
 }
 
 export async function testEndpoints(config: ApiTesterConfig): Promise<TestResult<any>[]> {
-    const testResults: TestResult<any>[] = [];
-    for (const api of config.apisConfig) {
-        for (const endpoint of api.endpoints) {
-            const testResult = await testEndpoint(api, endpoint);
-            testResults.push(testResult);
-        }
-    }
-    return testResults;
+    const testResults: Promise<TestResult<any>>[] = [];
+    config.apisConfig.forEach((api) =>
+        api.endpoints.forEach((endpoint) =>
+            testResults.push(testEndpoint(api, endpoint))
+        )
+    );
+    return Promise.all(testResults);
 }

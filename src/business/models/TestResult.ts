@@ -7,7 +7,6 @@ export type TestResult<T> = {
     baseUrl: string;
     route: string;
     method: Method;
-    decoderName?: string;
     timestamp: number;
     complementaryData: ComplementaryData<T>;
 };
