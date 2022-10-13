@@ -57,7 +57,11 @@ export async function testEndpoints(config: ApiTesterConfig, showDetails: boolea
 }
 
 export function getConfigLocation() {
-    const currentWorkingDirectory = process.cwd();
+    let currentWorkingDirectory = process.cwd();
+    const basefile: string = './tsconfig.json';
+    while (!fs.existsSync(basefile)) {
+        currentWorkingDirectory = path.join(currentWorkingDirectory, '../');
+    }
     let file: string = readFileSync(`${currentWorkingDirectory}\\tsconfig.json`, 'utf8');
     file = file.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
     const outDir = JSON.parse(file).compilerOptions.outDir ?? '';
