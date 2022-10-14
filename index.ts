@@ -6,7 +6,7 @@ import { Options } from './src/business/models/Options';
 import { getConfigPath } from './src/utils';
 import { writeLogs } from './src/presentation/logger';
 import { printResults } from './src/presentation/printer';
-import {createHtmlReport} from "./src/presentation/htmlGenerator";
+import { writeHtmlReport } from './src/presentation/htmlGenerator';
 
 export { AxiosRequestConfig, Method } from 'axios';
 export * from './src/business/models/ApiTesterConfig';
@@ -16,7 +16,7 @@ program
     .description('Test API endpoints with their matching decoders')
     .option('-c, --config <configPath>', 'Set the config file path')
     .option('-v, --verbose', 'Prints more detailed stacktrace')
-    .option('-r, --report <reportPath>', 'Generate an html report file')
+    .option('-r, --report <reportFilename>', 'Generate an html report file')
     .action(async (options: Options) => {
         const { exec } = require('child_process');
         const cmd = 'tsc.cmd apitester-config.ts --outDir lib --resolveJsonModule --downlevelIteration --esModuleInterop';
@@ -31,7 +31,7 @@ program
                     const testResults = await testEndpoints(config);
                     printResults(testResults, options.verbose);
                     writeLogs(testResults);
-                createHtmlReport(testResults,options.reportPath);
+                writeHtmlReport(testResults,options.reportFilename);
                 })
                 .catch(console.error);
         });

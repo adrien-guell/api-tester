@@ -9,12 +9,11 @@ import {
 import { Method } from 'axios';
 import { resultStatusDict } from './strings';
 import { cssString } from './strings';
-
 import { groupBy } from '../utils';
 import fs from 'fs';
 import * as config from '../../config.json';
 import dateFormat from 'dateformat';
-import * as path from "path";
+import * as path from 'path';
 
 export type HtmlReportData = {
     description: string;
@@ -26,11 +25,8 @@ export type HtmlReportData = {
     dateTime: string;
 };
 
-// TODO ajouter l'option report avec un argument qui donne le path ou save le report
-// TODO appeler le generateur de report dans index.ts quand l'option n'est pas undefined
-
-export function createHtmlReport(testResults: TestResult<any>[], reportPath?: string) {
-    const data: HtmlReportData[] = testResults.map(function (testResult) {
+export function testResultsToHtmlReportsData(testResults: TestResult<any>[]) {
+    return testResults.map((testResult) => {
         let error: string;
         if (complementaryDataIsDecodeErrorData(testResult.complementaryData)) {
             error = testResult.complementaryData.error;
@@ -42,8 +38,8 @@ export function createHtmlReport(testResults: TestResult<any>[], reportPath?: st
             error = 'none';
         }
 
-        const htmlReportData: HtmlReportData = {
-            description: testResult.description ?? 'no description',
+        return {
+            description: testResult.description ?? 'No description',
             baseUrl: testResult.baseUrl,
             endpoint: testResult.route,
             status: testResult.complementaryData.status,
@@ -51,25 +47,26 @@ export function createHtmlReport(testResults: TestResult<any>[], reportPath?: st
             error: error,
             dateTime: dateFormat(new Date(testResult.timestamp), config.dateFormat),
         };
-
-        return htmlReportData;
     });
+}
 
-    const htmlReport = getFullHtmlString('Api Tester Report', cssString, data);
+
+export function writeHtmlReport(testResults: TestResult<any>[], reportPath?: string) {
+    const htmlReportsData = testResultsToHtmlReportsData(testResults);
+    const htmlReport = Html(Header('Api Tester Report', cssString), getBody(htmlReportsData));
 
     if (!fs.existsSync(config.reportDefaultDirectory)) {
         fs.mkdirSync(config.reportDefaultDirectory);
     }
 
-    fs.writeFileSync(reportPath ?? path.join(config.reportDefaultDirectory,`${config.reportDefaultFileName}-${Date.now()}.html`), htmlReport,{flag:'w'});
-}
-
-export function getFullHtmlString(
-    tittle: string,
-    style: string,
-    htmlReportsData: HtmlReportData[]
-) {
-    return Html(Header(tittle, style), getBody(htmlReportsData));
+    fs.writeFileSync(
+        reportPath ?? path.join(
+            config.reportDefaultDirectory,
+            `${config.reportDefaultFileName}-${Date.now()}.html`,
+        ),
+        htmlReport,
+        { flag: 'w' },
+    );
 }
 
 export function getBody(htmlReportsData: HtmlReportData[]) {
@@ -92,9 +89,9 @@ export function getTable(htmlReportsData: HtmlReportData[]) {
                 TableHeader('Method'),
                 TableHeader('Error'),
                 TableHeader('Datetime'),
-            ])
+            ]),
         ),
-        TableBody(htmlReportsData.map(getRow))
+        TableBody(htmlReportsData.map(getRow)),
     );
 }
 
@@ -106,7 +103,7 @@ export function getRow(htmlReportData: HtmlReportData) {
         TableData(
             Div(resultStatusDict[htmlReportData.status]?.title, {
                 class: resultStatusDict[htmlReportData.status]?.class,
-            })
+            }),
         ),
         TableData(Div(htmlReportData.method.toUpperCase(), { class: htmlReportData.method })),
         TableData(htmlReportData.error),
@@ -150,12 +147,7 @@ export const Header1 = (content?: string, attributes?: Dict<string>) =>
 export const Body = (content?: string) => `<body>${content}</body>`;
 
 export const Header = (title: string, style: string) =>
-    `<head>
-<title>${title}</title>
-        <script src="https://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
-        <style>${style}</style>
-     </head>`;
+    `<head><title>${title}</title><script src='https://www.kryogenix.org/code/browser/sorttable/sorttable.js'></script><style>${style}</style></head>`;
 
 export const Html = (header: string, body: string) =>
-    `<!DOCTYPE html>
-<html lang="en">${header}${body}</html>`;
+    `<!DOCTYPE html><html lang='en'>${header}${body}</html>`;
