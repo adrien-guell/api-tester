@@ -51,7 +51,7 @@ export function testResultsToHtmlReportsData(testResults: TestResult<any>[]) {
 }
 
 
-export function writeHtmlReport(testResults: TestResult<any>[], reportPath?: string) {
+export function writeHtmlReport(testResults: TestResult<any>[], reportFilename?: string) {
     const htmlReportsData = testResultsToHtmlReportsData(testResults);
     const htmlReport = Html(Header('Api Tester Report', cssString), getBody(htmlReportsData));
 
@@ -60,9 +60,9 @@ export function writeHtmlReport(testResults: TestResult<any>[], reportPath?: str
     }
 
     fs.writeFileSync(
-        reportPath ?? path.join(
+        path.join(
             config.reportDefaultDirectory,
-            `${config.reportDefaultFileName}-${Date.now()}.html`,
+            reportFilename ?? `${config.reportDefaultFileName}-${Date.now()}.html`,
         ),
         htmlReport,
         { flag: 'w' },
