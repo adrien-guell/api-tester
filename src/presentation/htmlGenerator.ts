@@ -139,7 +139,7 @@ export const TableHeader = (content: string, attributes?: Dict<string>) =>
     `<th${attrToString(attributes)}>${content}</th>`;
 
 export const Table = (tableHead: string, tableBody: string, attributes?: Dict<string>) =>
-    `<table${attrToString(attributes)}>${tableHead}${tableBody}</table>`;
+    `<table class="sortable">${tableHead}${tableBody}</table>`;
 
 export const Header1 = (content?: string, attributes?: Dict<string>) =>
     `<h1${attrToString(attributes)}>${content}</h1>`;
