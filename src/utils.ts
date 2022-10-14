@@ -1,62 +1,17 @@
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { promptApiThatIsTested, promptFail } from './ui/uiTools';
-import { ApiTesterConfig } from './models/ApiTesterConfig';
-import chalk from 'chalk';
-import * as fs from 'fs';
-import { readFileSync } from 'fs';
 import path from 'path';
-import { Api } from './models/Api';
-import { Endpoint } from './models/Endpoint';
+import fs, { readFileSync } from 'fs';
+import stringifyObject from 'stringify-object';
 
-async function testEndpoint(api: Api, endpoint: Endpoint<any>, showDetails: boolean) {
-    const logFilename = `apitester_logs\\apitester-log-${Date.now()}.txt`;
-
-    let axiosRequestConfig: AxiosRequestConfig = {
-        baseURL: api.baseUrl,
-        url: endpoint.route,
-        method: endpoint.method,
-        headers: api.headers,
-        params: Object.assign({}, api.queryParameters, endpoint.queryParameters),
-        data: endpoint.body,
-    };
-
-    if (endpoint.preRequestAction)
-        axiosRequestConfig = endpoint.preRequestAction(axiosRequestConfig);
-
-    await axios
-        .request(axiosRequestConfig)
-        .then((response) => {
-            try {
-                if (endpoint.decoder) {
-                    const decodedData = endpoint.decoder(response.data);
-                    if (endpoint.postRequestValidation)
-                        endpoint.postRequestValidation(decodedData, response.data);
-                }
-                console.log(chalk.green(`${endpoint.route} - Success`));
-            } catch (error) {
-                promptFail(endpoint.description ?? endpoint.route, showDetails, logFilename, error);
-            }
-        })
-        .catch((error: Error | AxiosError) => {
-            promptFail(endpoint.description ?? endpoint.route, showDetails, logFilename, error);
-        });
-
-    return axiosRequestConfig;
+export function getMostRecentFilename(directory: string): string {
+    const files = fs.readdirSync(directory);
+    const filesCreationTimestamp = files.map((file) => {
+        return fs.statSync(path.join(directory, file)).ctime.getTime();
+    });
+    const maxCreationTimestamp = Math.max(...filesCreationTimestamp);
+    return path.join(directory, files[filesCreationTimestamp.indexOf(maxCreationTimestamp)]);
 }
 
-export async function testEndpoints(config: ApiTesterConfig, showDetails: boolean) {
-    if (!fs.existsSync('apitester_logs')) fs.mkdirSync('apitester_logs');
-
-    for (const api of config.apisConfig) {
-        promptApiThatIsTested(api.baseUrl);
-
-        for (const endpoint of api.endpoints) {
-            testEndpoint(api, endpoint, showDetails);
-        }
-    }
-}
-
-export function getConfigLocation() {
+export function getConfigLocation(configFilename: string): string {
     let currentWorkingDirectory = process.cwd();
     const basefile: string = './tsconfig.json';
     while (!fs.existsSync(basefile)) {
@@ -65,5 +20,32 @@ export function getConfigLocation() {
     let file: string = readFileSync(`${currentWorkingDirectory}\\tsconfig.json`, 'utf8');
     file = file.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
     const outDir = JSON.parse(file).compilerOptions.outDir ?? '';
-    return path.join(currentWorkingDirectory, outDir, 'apitester-config.js');
+    return path.join(currentWorkingDirectory, outDir, configFilename);
+}
+
+export const stringify = (data: any) => stringifyObject(data,{
+    indent: '  ',
+    singleQuotes: false
+});
+
+function escapeRegExp(str: string) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+}
+
+export function replaceAll(str: string, find: string, replace: string) {
+    return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
+
+export function groupBy<T, K>(list: T[], keyGetter: (data: T) => K) {
+    const map = new Map<K, T[]>();
+    list.forEach((item) => {
+        const key = keyGetter(item);
+        const collection = map.get(key);
+        if (!collection) {
+            map.set(key, [item]);
+        } else {
+            collection.push(item);
+        }
+    });
+    return map;
 }
