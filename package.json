@@ -5,8 +5,9 @@
   },
   "types": "node",
   "scripts": {
-    "build": "tsc",
-    "start": "npm run build && node lib/index.js"
+    "build": "tsc && npm run copyFiles",
+    "start": "npm run build && node lib/index.js",
+    "copyFiles": "copy .\\src\\style.css .\\lib\\src"
   },
   "engines": {
     "node": "16"

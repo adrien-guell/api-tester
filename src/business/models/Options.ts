@@ -1,5 +1,5 @@
 export type Options = {
-    configLocation?: string;
+    configPath?: string;
     verbose: boolean;
-    reportLocation?: string;
+    reportPath?: string;
 };

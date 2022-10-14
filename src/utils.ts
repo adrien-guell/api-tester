@@ -11,7 +11,7 @@ export function getMostRecentFilename(directory: string): string {
     return path.join(directory, files[filesCreationTimestamp.indexOf(maxCreationTimestamp)]);
 }
 
-export function getConfigLocation(configFilename: string): string {
+export function getConfigPath(configFilename: string): string {
     let currentWorkingDirectory = process.cwd();
     const basefile: string = './tsconfig.json';
     while (!fs.existsSync(basefile)) {
