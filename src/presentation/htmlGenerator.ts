@@ -8,6 +8,8 @@ import {
 } from '../business/models/TestResult';
 import { Method } from 'axios';
 import { resultStatusDict } from './strings';
+import { cssString } from './strings';
+
 import { groupBy } from '../utils';
 import fs from 'fs';
 import * as config from '../../config.json';
@@ -53,7 +55,7 @@ export function createHtmlReport(testResults: TestResult<any>[], reportPath?: st
         return htmlReportData;
     });
 
-    const htmlReport = getFullHtmlString('Api Tester Report', '', data);
+    const htmlReport = getFullHtmlString('Api Tester Report', cssString, data);
 
     if (!fs.existsSync(config.reportDefaultDirectory)) {
         fs.mkdirSync(config.reportDefaultDirectory);
