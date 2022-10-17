@@ -17,10 +17,7 @@ export function getConfigLocation(configFilename: string): string {
     while (!fs.existsSync(basefile)) {
         currentWorkingDirectory = path.join(currentWorkingDirectory, '../');
     }
-    let file: string = readFileSync(`${currentWorkingDirectory}\\tsconfig.json`, 'utf8');
-    file = file.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '').trim();
-    const outDir = JSON.parse(file).compilerOptions.outDir ?? '';
-    return path.join(currentWorkingDirectory, outDir, configFilename);
+    return path.join(currentWorkingDirectory, 'lib/', configFilename);
 }
 
 export const stringify = (data: any) => stringifyObject(data,{

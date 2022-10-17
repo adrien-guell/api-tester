@@ -17,14 +17,21 @@ program
     .option('-v, --verbose', 'Prints more detailed stacktrace')
     .option('-r, --report <reportLocation>', 'Generate an html report file')
     .action(async (options: Options) => {
-        const configLocation = options.configLocation ?? getConfigLocation('apitester-config.js');
-        import(configLocation)
-            .then(async (defaultImport) => {
-                const config: ApiTesterConfig = defaultImport.default;
-                const testResults = await testEndpoints(config);
-                printResults(testResults, options.verbose);
-                writeLogs(testResults);
-            })
-            .catch(console.error);
+        const { exec } = require('child_process');
+        const cmd = 'tsc.cmd apitester-config.ts --outDir lib --resolveJsonModule --downlevelIteration --esModuleInterop';
+        exec(cmd).on('exit', (code: number) => {
+            if (code != 0)
+                throw new Error("Cannot execute command: " + cmd);
+
+            const configLocation = options.configLocation ?? getConfigLocation('apitester-config.js');
+            import(configLocation)
+                .then(async (defaultImport) => {
+                    const config: ApiTesterConfig = defaultImport.default;
+                    const testResults = await testEndpoints(config);
+                    printResults(testResults, options.verbose);
+                    writeLogs(testResults);
+                })
+                .catch(console.error);
+        });
     })
     .parse();
