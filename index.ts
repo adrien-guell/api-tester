@@ -18,15 +18,11 @@ program
     .option('-r, --report <reportLocation>', 'Generate an html report file')
     .action(async (options: Options) => {
         const { exec } = require('child_process');
-        const cmd = 'tsc apitester-config.ts --outDir lib';
-        exec(cmd, (err: string, stdout: string, stderr: string) => {
-            // FIXME: remove these console.error
-            console.error('stdout is:' + stdout);
-            console.error('stderr is:' + stderr);
-            console.error('error is:' + err);
-        }).on('exit', (code: number) => {
-            // TODO: condition of code = 0 => success then continue else throw error
-            console.error('final exit code is', code);
+        const cmd = 'tsc.cmd apitester-config.ts --outDir lib --resolveJsonModule --downlevelIteration --esModuleInterop';
+        exec(cmd).on('exit', (code: number) => {
+            if (code != 0)
+                throw new Error("Cannot execute command: " + cmd);
+
             const configLocation = options.configLocation ?? getConfigLocation('apitester-config.js');
             import(configLocation)
                 .then(async (defaultImport) => {
