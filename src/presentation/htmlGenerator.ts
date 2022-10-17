@@ -7,8 +7,7 @@ import {
     TestResult,
 } from '../business/models/TestResult';
 import { Method } from 'axios';
-import { resultStatusDict } from './strings';
-import { cssString } from './strings';
+import { cssString, resultStatusDict } from './strings';
 import { groupBy } from '../utils';
 import fs from 'fs';
 import * as config from '../../config.json';
@@ -50,7 +49,6 @@ export function testResultsToHtmlReportsData(testResults: TestResult<any>[]) {
     });
 }
 
-
 export function writeHtmlReport(testResults: TestResult<any>[], reportFilename?: string) {
     const htmlReportsData = testResultsToHtmlReportsData(testResults);
     const htmlReport = Html(Header('Api Tester Report', cssString), getBody(htmlReportsData));
@@ -62,10 +60,10 @@ export function writeHtmlReport(testResults: TestResult<any>[], reportFilename?:
     fs.writeFileSync(
         path.join(
             config.reportDefaultDirectory,
-            reportFilename ?? `${config.reportDefaultFileName}-${Date.now()}.html`,
+            reportFilename ?? `${config.reportDefaultFileName}-${Date.now()}.html`
         ),
         htmlReport,
-        { flag: 'w' },
+        { flag: 'w' }
     );
 }
 
@@ -73,41 +71,46 @@ export function getBody(htmlReportsData: HtmlReportData[]) {
     const htmlReportsMap = groupBy(htmlReportsData, (htmlReportData) => htmlReportData.baseUrl);
     let html = '';
     for (const [api, htmlReportsData] of htmlReportsMap) {
-        html += Header1(api) + getTable(htmlReportsData);
+        html += getDetails(api, htmlReportsData);
     }
     return Body(html);
+}
+
+export function getDetails(api: string, htmlReportsData: HtmlReportData[]) {
+    return Details(Header1(api), getTable(htmlReportsData));
 }
 
 export function getTable(htmlReportsData: HtmlReportData[]) {
     return Table(
         TableHead(
             TableRow([
-                TableHeader('Description',{ class: "description"}),
-                TableHeader('Baseurl',{ class: "baseUrl"}),
-                TableHeader('Endpoint',{ class: "endpoint"}),
-                TableHeader('Status',{ class: "status"}),
-                TableHeader('Method',{ class: "method"}),
-                TableHeader('Error',{ class: "error"}),
-                TableHeader('Datetime',{ class: "dateTime"}),
-            ]),
+                TableHeader('Description', { class: 'description' }),
+                TableHeader('Baseurl', { class: 'baseUrl' }),
+                TableHeader('Endpoint', { class: 'endpoint' }),
+                TableHeader('Status', { class: 'status' }),
+                TableHeader('Method', { class: 'method' }),
+                TableHeader('Error', { class: 'error' }),
+                TableHeader('Datetime', { class: 'dateTime' }),
+            ])
         ),
-        TableBody(htmlReportsData.map(getRow)),
+        TableBody(htmlReportsData.map(getRow))
     );
 }
 
 export function getRow(htmlReportData: HtmlReportData) {
     return TableRow([
-        TableData(htmlReportData.description,{ class: "description"}),
-        TableData(htmlReportData.baseUrl,{ class: "baseUrl"}),
-        TableData(htmlReportData.endpoint,{ class: "endpoint"}),
+        TableData(htmlReportData.description, { class: 'description' }),
+        TableData(htmlReportData.baseUrl, { class: 'baseUrl' }),
+        TableData(htmlReportData.endpoint, { class: 'endpoint' }),
         TableData(
             Div(resultStatusDict[htmlReportData.status]?.title, {
                 class: resultStatusDict[htmlReportData.status]?.class,
-            }),{ class: "status"}
+            }),
+            { class: 'status' }
         ),
         TableData(Div(htmlReportData.method.toUpperCase(), { class: htmlReportData.method })),
-        TableData(htmlReportData.error,{ class: "error"}),
-        TableData(htmlReportData.dateTime,{ class: "dateTime"}),
+        TableData(htmlReportData.error, { class: 'error' }),
+        TableData(htmlReportData.dateTime, { class: 'dateTime' }),
     ]);
 }
 
@@ -122,6 +125,9 @@ export function attrToString(attributes?: Dict<string>) {
 
 export const Div = (content?: string, attributes?: Dict<string>) =>
     `<div${attrToString(attributes)}>${content}</div>`;
+
+export const Details = (title?: string, content?: string, attributes?: Dict<string>) =>
+    `<details open${attrToString(attributes)}><summary>${title}</summary>${content}</details>`;
 
 export const TableData = (content?: string, attributes?: Dict<string>) =>
     `<td${attrToString(attributes)}>${content}</td>`;
