@@ -17,14 +17,18 @@ program
     .option('-v, --verbose', 'Prints more detailed stacktrace')
     .option('-r, --report <reportLocation>', 'Generate an html report file')
     .action(async (options: Options) => {
-        const configLocation = options.configLocation ?? getConfigLocation('apitester-config.js');
-        import(configLocation)
-            .then(async (defaultImport) => {
-                const config: ApiTesterConfig = defaultImport.default;
-                const testResults = await testEndpoints(config);
-                printResults(testResults, options.verbose);
-                writeLogs(testResults);
-            })
-            .catch(console.error);
-    })
+        const { exec } = require('child_process');
+        exec('tsc apitester-config.ts --outDir lib');
+        setTimeout(()=>{
+            const configLocation = options.configLocation ?? getConfigLocation('apitester-config.js');
+            import(configLocation)
+                .then(async (defaultImport) => {
+                    const config: ApiTesterConfig = defaultImport.default;
+                    const testResults = await testEndpoints(config);
+                    printResults(testResults, options.verbose);
+                    writeLogs(testResults);
+                })
+                .catch(console.error);
+        },4000)
+        })
     .parse();
