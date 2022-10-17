@@ -18,8 +18,15 @@ program
     .option('-r, --report <reportLocation>', 'Generate an html report file')
     .action(async (options: Options) => {
         const { exec } = require('child_process');
-        exec('tsc apitester-config.ts --outDir lib');
-        setTimeout(()=>{
+        const cmd = 'tsc apitester-config.ts --outDir lib';
+        exec(cmd, (err: string, stdout: string, stderr: string) => {
+            // FIXME: remove these console.error
+            console.error('stdout is:' + stdout);
+            console.error('stderr is:' + stderr);
+            console.error('error is:' + err);
+        }).on('exit', (code: number) => {
+            // TODO: condition of code = 0 => success then continue else throw error
+            console.error('final exit code is', code);
             const configLocation = options.configLocation ?? getConfigLocation('apitester-config.js');
             import(configLocation)
                 .then(async (defaultImport) => {
@@ -29,6 +36,6 @@ program
                     writeLogs(testResults);
                 })
                 .catch(console.error);
-        },4000)
-        })
+        });
+    })
     .parse();
