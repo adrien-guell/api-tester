@@ -82,13 +82,13 @@ export function getTable(htmlReportsData: HtmlReportData[]) {
     return Table(
         TableHead(
             TableRow([
-                TableHeader('Description'),
-                TableHeader('Baseurl'),
-                TableHeader('Endpoint'),
-                TableHeader('Status'),
-                TableHeader('Method'),
-                TableHeader('Error'),
-                TableHeader('Datetime'),
+                TableHeader('Description',{ class: "description"}),
+                TableHeader('Baseurl',{ class: "baseUrl"}),
+                TableHeader('Endpoint',{ class: "endpoint"}),
+                TableHeader('Status',{ class: "status"}),
+                TableHeader('Method',{ class: "method"}),
+                TableHeader('Error',{ class: "error"}),
+                TableHeader('Datetime',{ class: "dateTime"}),
             ]),
         ),
         TableBody(htmlReportsData.map(getRow)),
@@ -97,17 +97,17 @@ export function getTable(htmlReportsData: HtmlReportData[]) {
 
 export function getRow(htmlReportData: HtmlReportData) {
     return TableRow([
-        TableData(htmlReportData.description),
-        TableData(htmlReportData.baseUrl),
-        TableData(htmlReportData.endpoint),
+        TableData(htmlReportData.description,{ class: "description"}),
+        TableData(htmlReportData.baseUrl,{ class: "baseUrl"}),
+        TableData(htmlReportData.endpoint,{ class: "endpoint"}),
         TableData(
             Div(resultStatusDict[htmlReportData.status]?.title, {
                 class: resultStatusDict[htmlReportData.status]?.class,
-            }),
+            }),{ class: "status"}
         ),
         TableData(Div(htmlReportData.method.toUpperCase(), { class: htmlReportData.method })),
-        TableData(htmlReportData.error),
-        TableData(htmlReportData.dateTime),
+        TableData(htmlReportData.error,{ class: "error"}),
+        TableData(htmlReportData.dateTime,{ class: "dateTime"}),
     ]);
 }
 
