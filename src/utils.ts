@@ -11,16 +11,16 @@ export function getMostRecentFilename(directory: string): string {
     return path.join(directory, files[filesCreationTimestamp.indexOf(maxCreationTimestamp)]);
 }
 
-export function getConfigPath(configFilename: string): string {
+export function getConfigPath(configPath: string): string {
     let currentWorkingDirectory = process.cwd();
     const basefile: string = './tsconfig.json';
     while (!fs.existsSync(basefile)) {
         currentWorkingDirectory = path.join(currentWorkingDirectory, '../');
     }
-    return path.join(currentWorkingDirectory, 'lib/', configFilename);
+    return path.join(currentWorkingDirectory, configPath);
 }
 
-export const stringify = (data: any) => stringifyObject(data,{
+export const stringify = (data: any) => stringifyObject(data, {
     indent: '  ',
     singleQuotes: false
 });
