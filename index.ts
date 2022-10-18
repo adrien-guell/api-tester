@@ -19,10 +19,10 @@ program
     .option('-r, --report <reportFilename>', 'Generate an html report file')
     .action(async (options: Options) => {
         const { exec } = require('child_process');
-        const cmd = 'tsc.cmd apitester-config.ts --outDir lib --resolveJsonModule --downlevelIteration --esModuleInterop';
+        const cmd =
+            'tsc.cmd apitester-config.ts --outDir lib --resolveJsonModule --downlevelIteration --esModuleInterop';
         exec(cmd).on('exit', (code: number) => {
-            if (code != 0)
-                throw new Error("Cannot execute command: " + cmd);
+            if (code != 0) throw new Error('Cannot execute command: ' + cmd);
 
             const configPath = options.configPath ?? getConfigPath('apitester-config.js');
             import(configPath)
@@ -31,7 +31,9 @@ program
                     const testResults = await testEndpoints(config);
                     printResults(testResults, options.verbose);
                     writeLogs(testResults);
-                writeHtmlReport(testResults,options.reportFilename);
+                    if (options.reportFilename != undefined) {
+                        writeHtmlReport(testResults, options.reportFilename);
+                    }
                 })
                 .catch(console.error);
         });
