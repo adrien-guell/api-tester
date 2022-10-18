@@ -31,7 +31,7 @@ program
                     const testResults = await testEndpoints(config);
                     printResults(testResults, options.verbose);
                     writeLogs(testResults);
-                    if (options.reportFilename != undefined) {
+                    if (options.reportFilename) {
                         writeHtmlReport(testResults, options.reportFilename);
                     }
                 })
