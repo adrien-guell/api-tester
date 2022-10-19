@@ -7,8 +7,7 @@ import { writeLogs } from './src/presentation/logger';
 import { printResults } from './src/presentation/printer';
 import { rm } from 'fs';
 import { writeHtmlReport } from './src/presentation/htmlGenerator';
-import { getBuiltConfigFile } from './src/utils';
-
+import { getBuiltConfigFile, getExistStatus } from './src/utils';
 export { AxiosRequestConfig, Method } from 'axios';
 export * from './src/business/models/ApiTesterConfig';
 
@@ -30,11 +29,14 @@ program
                             writeHtmlReport(testResults, options.report);
                         }
                         printResults(testResults, options.verbose);
+                        getExistStatus(testResults);
                     })
                     .catch(console.error);
-                rm(configPath, err => {
+                rm(configPath, (err) => {
                     if (err) console.error(err);
                 });
-            }).catch(console.error);
+            })
+
+            .catch(console.error);
     })
     .parse();

@@ -1,8 +1,12 @@
 import path from 'path';
-import fs, { existsSync, readFileSync } from 'fs';
+import fs, { existsSync } from 'fs';
 import stringifyObject from 'stringify-object';
 import { defaultConfigFilename } from '../config.json';
 import { exec } from 'child_process';
+import {
+    complementaryDataIsSuccessData,
+    TestResult,
+} from './business/models/TestResult';
 
 export function getMostRecentFilename(directory: string): string {
     const files = fs.readdirSync(directory);
@@ -16,8 +20,12 @@ export function getMostRecentFilename(directory: string): string {
 export function getBuiltConfigFile(userDefinedConfigPath?: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
         const flags = '--resolveJsonModule --downlevelIteration --esModuleInterop';
-        const configPath = userDefinedConfigPath ??
-            path.join(findFileFolderInCurrentTree(`${defaultConfigFilename}.ts`), `${defaultConfigFilename}.ts`);
+        const configPath =
+        userDefinedConfigPath ??
+            path.join(
+            findFileFolderInCurrentTree(`${defaultConfigFilename}.ts`),
+            `${defaultConfigFilename}.ts`
+        );
         if (!existsSync(configPath)) reject(`File not found: ${configPath}`);
         const command = `tsc.cmd ${configPath} ${flags}`;
         const builtConfigPath = configPath.replace('.ts', '.js');
@@ -64,4 +72,14 @@ export function groupBy<T, K>(list: T[], keyGetter: (data: T) => K): Map<K, T[]>
         }
     });
     return map;
+}
+
+export function getExistStatus(testResults: TestResult<any>[]) {
+    testResults.forEach((testResult) => {
+        const complementaryData = testResult.complementaryData;
+        if (!complementaryDataIsSuccessData(complementaryData)) {
+            console.log('test failed');
+            process.exit(1);
+        }
+    });
 }
