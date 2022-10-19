@@ -23,11 +23,11 @@ export function getBuiltConfigFile(userDefinedConfigPath?: string): Promise<stri
         const configPath =
         userDefinedConfigPath ??
             path.join(
-            findFileFolderInCurrentTree(`${defaultConfigFilename}.ts`),
-            `${defaultConfigFilename}.ts`
-        );
+                findFileFolderInCurrentTree(`${defaultConfigFilename}.ts`),
+                `${defaultConfigFilename}.ts`,
+            );
         if (!existsSync(configPath)) reject(`File not found: ${configPath}`);
-        const command = `tsc.cmd ${configPath} ${flags}`;
+        const command = `npx tsc ${configPath} ${flags}`;
         const builtConfigPath = configPath.replace('.ts', '.js');
         exec(command).on('exit', (code: number) => {
             if (code != 0) reject('Cannot execute command: ' + command);
@@ -75,10 +75,7 @@ export function groupBy<T, K>(list: T[], keyGetter: (data: T) => K): Map<K, T[]>
 }
 
 export function getExitCode(testResults: TestResult<any>[]) {
-    testResults.forEach((testResult) => {
-        if (!complementaryDataIsSuccessData(testResult.complementaryData)) {
-            return 1;
-        }
-    });
-    return 0;
+    return testResults.find((testResult) =>
+        !complementaryDataIsSuccessData(testResult.complementaryData),
+    ) ? 1 : 0;
 }
