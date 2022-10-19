@@ -7,7 +7,7 @@ import { writeLogs } from './src/presentation/logger';
 import { printResults } from './src/presentation/printer';
 import { rm } from 'fs';
 import { writeHtmlReport } from './src/presentation/htmlGenerator';
-import { getBuiltConfigFile } from './src/utils';
+import { getBuiltConfigFile, getExitCode } from './src/utils';
 
 export { AxiosRequestConfig, Method } from 'axios';
 export * from './src/business/models/ApiTesterConfig';
@@ -21,7 +21,7 @@ program
     .action(async (options: Options) => {
         getBuiltConfigFile(options.config)
             .then(async (configPath) => {
-                await import(configPath)
+                const exitCode = await import(configPath)
                     .then(async (defaultImport) => {
                         const config: ApiTesterConfig = defaultImport.default;
                         const testResults = await testEndpoints(config);
@@ -30,11 +30,20 @@ program
                             writeHtmlReport(testResults, options.report);
                         }
                         printResults(testResults, options.verbose);
+                        return getExitCode(testResults);
                     })
-                    .catch(console.error);
-                rm(configPath, err => {
-                    if (err) console.error(err);
+                    .catch((error) => {
+                        console.error(error);
+                        return 1;
+                    });
+                rm(configPath, (error) => {
+                    if (error) console.error(error);
                 });
-            }).catch(console.error);
+                process.exit(exitCode);
+            })
+            .catch((error) => {
+                console.error(error);
+                process.exit(1);
+            });
     })
     .parse();
