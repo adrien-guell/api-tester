@@ -74,12 +74,11 @@ export function groupBy<T, K>(list: T[], keyGetter: (data: T) => K): Map<K, T[]>
     return map;
 }
 
-export function getExistStatus(testResults: TestResult<any>[]) {
+export function getExitCode(testResults: TestResult<any>[]) {
     testResults.forEach((testResult) => {
-        const complementaryData = testResult.complementaryData;
-        if (!complementaryDataIsSuccessData(complementaryData)) {
-            console.log('test failed');
-            process.exit(1);
+        if (!complementaryDataIsSuccessData(testResult.complementaryData)) {
+            return 1;
         }
     });
+    return 0;
 }
