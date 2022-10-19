@@ -14,13 +14,13 @@ export function getMostRecentFilename(directory: string): string {
 }
 
 export function getBuiltConfigFile(userDefinedConfigPath?: string): Promise<string> {
-    const flags = '--resolveJsonModule --downlevelIteration --esModuleInterop';
-    const configPath = userDefinedConfigPath ??
-        path.join(findFileFolderInCurrentTree(`${defaultConfigFilename}.ts`), `${defaultConfigFilename}.ts`);
-    if (!existsSync(configPath)) throw `File not found: ${configPath}`;
-    const command = `tsc.cmd ${configPath} ${flags}`;
-    const builtConfigPath = configPath.replace('.ts', '.js');
     return new Promise<string>((resolve, reject) => {
+        const flags = '--resolveJsonModule --downlevelIteration --esModuleInterop';
+        const configPath = userDefinedConfigPath ??
+            path.join(findFileFolderInCurrentTree(`${defaultConfigFilename}.ts`), `${defaultConfigFilename}.ts`);
+        if (!existsSync(configPath)) reject(`File not found: ${configPath}`);
+        const command = `tsc.cmd ${configPath} ${flags}`;
+        const builtConfigPath = configPath.replace('.ts', '.js');
         exec(command).on('exit', (code: number) => {
             if (code != 0) reject('Cannot execute command: ' + command);
             resolve(builtConfigPath);
@@ -35,13 +35,13 @@ export function findFileFolderInCurrentTree(filename: string): string {
         currentWorkingDirectory = path.join(currentWorkingDirectory, '../');
         i++;
     }
-    if (i >= 30) throw `Could not find file named ${filename} in the project.`
+    if (i >= 30) throw `Could not find file named ${filename} in the project.`;
     return currentWorkingDirectory;
 }
 
 export const stringify = (data: any) => stringifyObject(data, {
     indent: '  ',
-    singleQuotes: false
+    singleQuotes: false,
 });
 
 function escapeRegExp(str: string) {
