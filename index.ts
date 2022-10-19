@@ -1,14 +1,14 @@
 #!/usr/bin/env node
-import { testEndpoints } from './src/business/testMethods';
-import { ApiTesterConfig } from './src/business/models/ApiTesterConfig';
-import { program } from 'commander';
-import { Options } from './src/business/models/Options';
-import { getConfigPath } from './src/utils';
-import { writeLogs } from './src/presentation/logger';
-import { printResults } from './src/presentation/printer';
-import { writeHtmlReport } from './src/presentation/htmlGenerator';
+import {testEndpoints} from './src/business/testMethods';
+import {ApiTesterConfig} from './src/business/models/ApiTesterConfig';
+import {program} from 'commander';
+import {Options} from './src/business/models/Options';
+import {getConfigPath} from './src/utils';
+import {writeLogs} from './src/presentation/logger';
+import {printResults} from './src/presentation/printer';
+import {writeHtmlReport} from './src/presentation/htmlGenerator';
 
-export { AxiosRequestConfig, Method } from 'axios';
+export {AxiosRequestConfig, Method} from 'axios';
 export * from './src/business/models/ApiTesterConfig';
 
 program
@@ -18,7 +18,7 @@ program
     .option('-v, --verbose', 'Prints more detailed stacktrace')
     .option('-r, --report <reportFilename>', 'Generate an html report file')
     .action(async (options: Options) => {
-        const { exec } = require('child_process');
+        const {exec} = require('child_process');
         const cmd =
             'tsc.cmd apitester-config.ts --outDir lib --resolveJsonModule --downlevelIteration --esModuleInterop';
         exec(cmd).on('exit', (code: number) => {
@@ -31,9 +31,8 @@ program
                     const testResults = await testEndpoints(config);
                     printResults(testResults, options.verbose);
                     writeLogs(testResults);
-                    if (options.reportFilename) {
-                        writeHtmlReport(testResults, options.reportFilename);
-                    }
+                    console.log(options.reportFilename)
+                    writeHtmlReport(testResults, options.reportFilename);
                 })
                 .catch(console.error);
         });
