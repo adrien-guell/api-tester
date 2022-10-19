@@ -1,6 +1,8 @@
 import path from 'path';
-import fs, { readFileSync } from 'fs';
+import fs, { existsSync, readFileSync } from 'fs';
 import stringifyObject from 'stringify-object';
+import { defaultConfigFilename } from '../config.json';
+import { exec } from 'child_process';
 
 export function getMostRecentFilename(directory: string): string {
     const files = fs.readdirSync(directory);
@@ -11,13 +13,30 @@ export function getMostRecentFilename(directory: string): string {
     return path.join(directory, files[filesCreationTimestamp.indexOf(maxCreationTimestamp)]);
 }
 
-export function getConfigPath(configPath: string): string {
+export function getBuiltConfigFile(userDefinedConfigPath?: string): Promise<string> {
+    const flags = '--resolveJsonModule --downlevelIteration --esModuleInterop';
+    const configPath = userDefinedConfigPath ??
+        path.join(findFileFolderInCurrentTree(`${defaultConfigFilename}.ts`), `${defaultConfigFilename}.ts`);
+    if (!existsSync(configPath)) throw `File not found: ${configPath}`;
+    const command = `tsc.cmd ${configPath} ${flags}`;
+    const builtConfigPath = configPath.replace('.ts', '.js');
+    return new Promise<string>((resolve, reject) => {
+        exec(command).on('exit', (code: number) => {
+            if (code != 0) reject('Cannot execute command: ' + command);
+            resolve(builtConfigPath);
+        });
+    });
+}
+
+export function findFileFolderInCurrentTree(filename: string): string {
     let currentWorkingDirectory = process.cwd();
-    const basefile: string = './tsconfig.json';
-    while (!fs.existsSync(basefile)) {
+    let i = 0;
+    while (!fs.existsSync(filename) && i < 30) {
         currentWorkingDirectory = path.join(currentWorkingDirectory, '../');
+        i++;
     }
-    return path.join(currentWorkingDirectory, configPath);
+    if (i >= 30) throw `Could not find file named ${filename} in the project.`
+    return currentWorkingDirectory;
 }
 
 export const stringify = (data: any) => stringifyObject(data, {
@@ -29,11 +48,11 @@ function escapeRegExp(str: string) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
-export function replaceAll(str: string, find: string, replace: string) {
+export function replaceAll(str: string, find: string, replace: string): string {
     return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
 
-export function groupBy<T, K>(list: T[], keyGetter: (data: T) => K) {
+export function groupBy<T, K>(list: T[], keyGetter: (data: T) => K): Map<K, T[]> {
     const map = new Map<K, T[]>();
     list.forEach((item) => {
         const key = keyGetter(item);

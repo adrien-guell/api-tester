@@ -4,7 +4,7 @@
   "logMaxSize": 1024,
   "dateFormat": "dd/mm/yyyy HH:MM:ss.l",
   "defaultConfigFilename": "apitester-config",
-  "buildFolder": "apitester-lib",
+  "defaultBuildFolder": null,
   "reportDefaultDirectory": "api-tester-reports",
   "reportDefaultFileName": "api-tester-report"
 }
