@@ -26,9 +26,8 @@ program
                         const config: ApiTesterConfig = defaultImport.default;
                         const testResults = await testEndpoints(config);
                         writeLogs(testResults);
-                        if (options.reportFilename) {
-                            writeHtmlReport(testResults, options.reportFilename);
-                        }
+                        writeHtmlReport(testResults, options.reportFilename);
+
                         printResults(testResults, options.verbose);
                     })
                     .catch(console.error);
