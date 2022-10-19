@@ -5,7 +5,7 @@ import { program } from 'commander';
 import { Options } from './src/business/models/Options';
 import { writeLogs } from './src/presentation/logger';
 import { printResults } from './src/presentation/printer';
-import { existsSync, rm } from 'fs';
+import { rm } from 'fs';
 import { writeHtmlReport } from './src/presentation/htmlGenerator';
 import { getBuiltConfigFile } from './src/utils';
 
