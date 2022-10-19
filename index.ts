@@ -19,15 +19,15 @@ program
     .option('-v, --verbose', 'Prints more detailed stacktrace')
     .option('-r, --report <reportFilename>', 'Generate an html report file')
     .action(async (options: Options) => {
-        getBuiltConfigFile(options.configPath)
+        getBuiltConfigFile(options.config)
             .then(async (configPath) => {
                 await import(configPath)
                     .then(async (defaultImport) => {
                         const config: ApiTesterConfig = defaultImport.default;
                         const testResults = await testEndpoints(config);
                         writeLogs(testResults);
-                        if (options.reportFilename) {
-                            writeHtmlReport(testResults, options.reportFilename);
+                        if (options.report) {
+                            writeHtmlReport(testResults, options.report);
                         }
                         printResults(testResults, options.verbose);
                     })
