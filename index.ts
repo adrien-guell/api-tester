@@ -29,10 +29,11 @@ program
                 .then(async (defaultImport) => {
                     const config: ApiTesterConfig = defaultImport.default;
                     const testResults = await testEndpoints(config);
-                    printResults(testResults, options.verbose);
                     writeLogs(testResults);
-                    console.log(options.reportFilename)
-                    writeHtmlReport(testResults, options.reportFilename);
+                    if (options.reportFilename) {
+                        writeHtmlReport(testResults, options.reportFilename);
+                    }
+                    printResults(testResults, options.verbose);
                 })
                 .catch(console.error);
         });
