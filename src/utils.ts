@@ -39,7 +39,7 @@ export function getBuiltConfigFile(userDefinedConfigPath?: string): Promise<stri
 export function findFileFolderInCurrentTree(filename: string): string {
     let currentWorkingDirectory = process.cwd();
     let i = 0;
-    while (!fs.existsSync(filename) && i < 30) {
+    while (!fs.existsSync(path.join(currentWorkingDirectory, filename)) && i < 30) {
         currentWorkingDirectory = path.join(currentWorkingDirectory, '../');
         i++;
     }

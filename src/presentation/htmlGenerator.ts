@@ -8,7 +8,7 @@ import {
 } from '../business/models/TestResult';
 import { Method } from 'axios';
 import { cssString, resultStatusDict, scriptString } from './strings';
-import { groupBy } from '../utils';
+import { findFileFolderInCurrentTree, groupBy } from '../utils';
 import fs from 'fs';
 import * as config from '../../config.json';
 import dateFormat from 'dateformat';
@@ -56,13 +56,17 @@ export function writeHtmlReport(testResults: TestResult<any>[], reportFilename?:
         getBody(htmlReportsData)
     );
 
-    if (!fs.existsSync(config.reportDefaultDirectory)) {
-        fs.mkdirSync(config.reportDefaultDirectory);
+    const reportDir = path.join(
+        findFileFolderInCurrentTree('package.json'),
+        config.reportDefaultDirectory
+    )
+    if (!fs.existsSync(reportDir)) {
+        fs.mkdirSync(reportDir);
     }
 
     fs.writeFileSync(
         path.join(
-            config.reportDefaultDirectory,
+            reportDir,
             reportFilename ?? `${config.reportDefaultFileName}-${Date.now()}.html`
         ),
         htmlReport,
