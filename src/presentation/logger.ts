@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as config from '../../config.json';
-import { getMostRecentFilename, replaceAll, stringify } from '../utils';
+import { findFileFolderInCurrentTree, getMostRecentFilename, replaceAll, stringify } from '../utils';
 import {
     complementaryDataIsDecodeErrorData, complementaryDataIsPostRequestErrorData,
     complementaryDataIsRequestErrorData, complementaryDataIsSuccessData,
@@ -10,15 +10,24 @@ import dateFormat from 'dateformat';
 import { resultStatusDict } from './strings';
 import { appendFileSync } from 'fs';
 import { LogData } from './LogData';
-const {format} = require('@redtea/format-axios-error');
+import * as path from 'path';
+
+const { format } = require('@redtea/format-axios-error');
 
 export function getLogPath(): string {
-    let logPath = `${config.logDirectory}\\${config.logFilename}${Date.now()}.txt`;
-    if (!fs.existsSync(config.logDirectory)) {
-        fs.mkdirSync(config.logDirectory);
+    let logDir = path.join(
+        findFileFolderInCurrentTree('package.json'),
+        config.logDirectory
+    )
+    let logPath = path.join(
+        logDir,
+        `${config.logFilename}${Date.now()}.txt`
+    );
+    if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir);
     } else {
-        if (fs.readdirSync(config.logDirectory).length) {
-            const mostRecentLogPath = getMostRecentFilename(config.logDirectory);
+        if (fs.readdirSync(logDir).length) {
+            const mostRecentLogPath = getMostRecentFilename(logDir);
             if (fs.statSync(mostRecentLogPath).size < config.logMaxSize) {
                 logPath = mostRecentLogPath;
             }
