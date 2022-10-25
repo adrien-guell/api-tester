@@ -1,10 +1,10 @@
 {
-  "logDirectory": "api-tester-logs",
-  "logFilename": "log",
+  "logDirectory": "api-tester/logs",
+  "logFilename": "api-tester-log",
   "logMaxSize": 1024,
   "dateFormat": "dd/mm/yyyy HH:MM:ss.l",
   "defaultConfigFilename": "apitester-config",
-  "defaultBuildFolder": null,
-  "reportDefaultDirectory": "api-tester-reports",
+  "defaultBuildFolder": "api-tester/bin",
+  "reportDefaultDirectory": "api-tester/reports",
   "reportDefaultFileName": "api-tester-report"
 }

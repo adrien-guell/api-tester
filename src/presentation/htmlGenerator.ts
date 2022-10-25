@@ -24,7 +24,7 @@ export type HtmlReportData = {
     dateTime: string;
 };
 
-export function testResultsToHtmlReportsData(testResults: TestResult<any>[]) {
+export function testResultsToHtmlReportsData(testResults: TestResult<unknown>[]) {
     return testResults.map((testResult) => {
         let error: string;
         if (complementaryDataIsDecodeErrorData(testResult.complementaryData)) {
@@ -49,7 +49,7 @@ export function testResultsToHtmlReportsData(testResults: TestResult<any>[]) {
     });
 }
 
-export function writeHtmlReport(testResults: TestResult<any>[], reportFilename?: string) {
+export function writeHtmlReport(testResults: TestResult<unknown>[], reportFilename?: string) {
     const htmlReportsData = testResultsToHtmlReportsData(testResults);
     const htmlReport = Html(
         Header('Api Tester Report', cssString, scriptString),
@@ -59,7 +59,7 @@ export function writeHtmlReport(testResults: TestResult<any>[], reportFilename?:
     const reportDir = path.join(
         findFileFolderInCurrentTree('package.json'),
         config.reportDefaultDirectory
-    )
+    );
     if (!fs.existsSync(reportDir)) {
         fs.mkdirSync(reportDir);
     }
@@ -67,7 +67,7 @@ export function writeHtmlReport(testResults: TestResult<any>[], reportFilename?:
     fs.writeFileSync(
         path.join(
             reportDir,
-            reportFilename ?? `${config.reportDefaultFileName}-${Date.now()}.html`
+            `${reportFilename ?? `${config.reportDefaultFileName}-${Date.now()}`}.html`
         ),
         htmlReport,
         { flag: 'w' }

@@ -1,5 +1,5 @@
 export type Options = {
     config?: string;
     verbose: boolean;
-    report?: string;
+    report: string | boolean | undefined;
 };

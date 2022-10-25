@@ -24,18 +24,21 @@ export type RequestErrorData = {
 
 export type DecodeErrorData = {
     status: 'decodeError';
+    rawData: any;
     error: any;
 };
 
 export type PostRequestErrorData<T> = {
     status: 'postRequestError';
-    decodedData: T;
+    decodedData?: T;
+    rawData: any;
     error: any;
 };
 
 export type SuccessData<T> = {
     status: 'success';
     decodedData?: T;
+    rawData: any;
     axiosResponse: AxiosResponse;
 };
 

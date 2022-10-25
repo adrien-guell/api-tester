@@ -1,17 +1,15 @@
-import path from 'path';
-import fs, { existsSync } from 'fs';
+import * as path from 'path';
+import { existsSync, readdirSync, statSync } from 'fs';
 import stringifyObject from 'stringify-object';
-import { defaultConfigFilename } from '../config.json';
+import * as config from '../config.json';
 import { exec } from 'child_process';
-import {
-    complementaryDataIsSuccessData,
-    TestResult,
-} from './business/models/TestResult';
+import { complementaryDataIsSuccessData, TestResult } from './business/models/TestResult';
+import fs from 'fs';
 
 export function getMostRecentFilename(directory: string): string {
-    const files = fs.readdirSync(directory);
+    const files = readdirSync(directory);
     const filesCreationTimestamp = files.map((file) => {
-        return fs.statSync(path.join(directory, file)).ctime.getTime();
+        return statSync(path.join(directory, file)).ctime.getTime();
     });
     const maxCreationTimestamp = Math.max(...filesCreationTimestamp);
     return path.join(directory, files[filesCreationTimestamp.indexOf(maxCreationTimestamp)]);
@@ -20,15 +18,22 @@ export function getMostRecentFilename(directory: string): string {
 export function getBuiltConfigFile(userDefinedConfigPath?: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
         const flags = '--resolveJsonModule --downlevelIteration --esModuleInterop';
+
+        const projectRootFolder = findFileFolderInCurrentTree('package.json');
         const configPath =
-        userDefinedConfigPath ??
-            path.join(
-                findFileFolderInCurrentTree(`${defaultConfigFilename}.ts`),
-                `${defaultConfigFilename}.ts`,
-            );
+            userDefinedConfigPath ??
+            path.join(projectRootFolder, `${config.defaultConfigFilename}.ts`);
         if (!existsSync(configPath)) reject(`File not found: ${configPath}`);
-        const command = `npx tsc ${configPath} ${flags}`;
-        const builtConfigPath = configPath.replace('.ts', '.js');
+
+        if (!fs.existsSync(config.defaultBuildFolder)) {
+            fs.mkdirSync(config.defaultBuildFolder, { recursive: true });
+        }
+        const command = `npx tsc --outDir ${config.defaultBuildFolder} ${configPath} ${flags}`;
+        const builtConfigPath = path.join(
+            projectRootFolder,
+            config.defaultBuildFolder,
+            `${config.defaultConfigFilename}.js`
+        );
         exec(command).on('exit', (code: number) => {
             if (code != 0) reject('Cannot execute command: ' + command);
             resolve(builtConfigPath);
@@ -39,7 +44,7 @@ export function getBuiltConfigFile(userDefinedConfigPath?: string): Promise<stri
 export function findFileFolderInCurrentTree(filename: string): string {
     let currentWorkingDirectory = process.cwd();
     let i = 0;
-    while (!fs.existsSync(path.join(currentWorkingDirectory, filename)) && i < 30) {
+    while (!existsSync(path.join(currentWorkingDirectory, filename)) && i < 30) {
         currentWorkingDirectory = path.join(currentWorkingDirectory, '../');
         i++;
     }
@@ -47,10 +52,11 @@ export function findFileFolderInCurrentTree(filename: string): string {
     return currentWorkingDirectory;
 }
 
-export const stringify = (data: any) => stringifyObject(data, {
-    indent: '  ',
-    singleQuotes: false,
-});
+export const stringify = (data: any) =>
+    stringifyObject(data, {
+        indent: '  ',
+        singleQuotes: false,
+    });
 
 function escapeRegExp(str: string) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
@@ -74,8 +80,10 @@ export function groupBy<T, K>(list: T[], keyGetter: (data: T) => K): Map<K, T[]>
     return map;
 }
 
-export function getExitCode(testResults: TestResult<any>[]) {
-    return testResults.find((testResult) =>
-        !complementaryDataIsSuccessData(testResult.complementaryData),
-    ) ? 1 : 0;
+export function getExitCode(testResults: TestResult<unknown>[]) {
+    return testResults.find(
+        (testResult) => !complementaryDataIsSuccessData(testResult.complementaryData)
+    )
+        ? 1
+        : 0;
 }

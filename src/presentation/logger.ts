@@ -50,29 +50,37 @@ export function testResultsToLogsData<T>(testResults: TestResult<T>[]): LogData[
                 stacktrace: format(complementaryData.error),
             };
         } else if (complementaryDataIsDecodeErrorData(complementaryData)) {
-            complementaryBody = complementaryData.error instanceof Error ?
-                {
-                    error: complementaryData.error.message,
-                    stacktrace: complementaryData.error.stack,
-                } : {
-                    error: complementaryData.error,
-                    stacktrace: 'Cannot retrieve stacktrace',
-                };
+            complementaryBody =
+                complementaryData.error instanceof Error
+                    ? {
+                          rawData: complementaryData.rawData,
+                          error: complementaryData.error.message,
+                          stacktrace: complementaryData.error.stack,
+                      }
+                    : {
+                          rawData: complementaryData.rawData,
+                          error: complementaryData.error,
+                          stacktrace: 'Cannot retrieve stacktrace',
+                      };
         } else if (complementaryDataIsPostRequestErrorData(complementaryData)) {
-            complementaryBody = complementaryData.error instanceof Error ?
-                {
-                    decodedData: complementaryData.decodedData,
-                    error: complementaryData.error.message,
-                    stacktrace: complementaryData.error.stack,
-                } : {
-                    decodedData: complementaryData.decodedData,
-                    error: complementaryData.error,
-                    stacktrace: 'Cannot retrieve stacktrace',
-                };
+            complementaryBody =
+                complementaryData.error instanceof Error
+                    ? {
+                          decodedData: complementaryData.decodedData,
+                          rawData: complementaryData.rawData,
+                          error: complementaryData.error.message,
+                          stacktrace: complementaryData.error.stack,
+                      }
+                    : {
+                          decodedData: complementaryData.decodedData,
+                          rawData: complementaryData.rawData,
+                          error: complementaryData.error,
+                          stacktrace: 'Cannot retrieve stacktrace',
+                      };
         } else if (complementaryDataIsSuccessData(complementaryData)) {
             complementaryBody = {
                 decodedData: complementaryData.decodedData,
-                rawData: complementaryData.axiosResponse.data,
+                rawData: complementaryData.rawData,
                 headers: complementaryData.axiosResponse.headers,
                 status: complementaryData.axiosResponse.status,
                 statusText: complementaryData.axiosResponse.statusText,
@@ -100,10 +108,10 @@ export function logsDataToString(logsData: LogData[]): string {
     let str = '';
     if (!logsData.length) return str;
 
-    const maxTitleLength = Math.max(...(logsData.map(logData => logData.title.length)));
+    const maxTitleLength = Math.max(...logsData.map((logData) => logData.title.length));
     const titleIndentation = maxTitleLength + logsData[0].dateTime.length + 1;
 
-    logsData.forEach(logData => {
+    logsData.forEach((logData) => {
         const fullTitle = `${logData.title}${' '.repeat(maxTitleLength - logData.title.length)}`;
         let body = stringify(logData.body);
         body = body.substring(1, body.length).substring(0, body.length - 3);
@@ -114,7 +122,7 @@ export function logsDataToString(logsData: LogData[]): string {
     return str;
 }
 
-export function writeLogs(testResults: TestResult<any>[]) {
+export function writeLogs(testResults: TestResult<unknown>[]) {
     const logPath = getLogPath();
     const logsData = testResultsToLogsData(testResults);
     const logString = logsDataToString(logsData);

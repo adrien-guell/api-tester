@@ -29,7 +29,7 @@ export function printApi(apiUrl: string) {
     console.log(chalk.blue(`╰${bar}╯`));
 }
 
-export function printResults(testResults: TestResult<any>[], verbose: boolean) {
+export function printResults(testResults: TestResult<unknown>[], verbose: boolean) {
     const mappedResults = groupBy(testResults, (testResult) => testResult.baseUrl);
 
     for (const [api, testResults] of mappedResults) {
@@ -42,7 +42,7 @@ export function printResults(testResults: TestResult<any>[], verbose: boolean) {
                     testResult.description,
                     testResult.route,
                     format(complementaryData.error),
-                    verbose,
+                    verbose
                 );
             } else if (complementaryDataIsDecodeErrorData(complementaryData)) {
                 printFailure(
@@ -50,7 +50,7 @@ export function printResults(testResults: TestResult<any>[], verbose: boolean) {
                     testResult.description,
                     testResult.route,
                     complementaryData.error,
-                    verbose,
+                    verbose
                 );
             } else if (complementaryDataIsPostRequestErrorData(complementaryData)) {
                 printFailure(
@@ -58,7 +58,7 @@ export function printResults(testResults: TestResult<any>[], verbose: boolean) {
                     testResult.description,
                     testResult.route,
                     complementaryData.error,
-                    verbose,
+                    verbose
                 );
             } else if (complementaryDataIsSuccessData(complementaryData)) {
                 console.log(chalk.green(`${testResult.description ?? testResult.route} - Success`));
