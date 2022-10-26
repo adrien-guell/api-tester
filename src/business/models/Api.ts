@@ -3,11 +3,11 @@ import { Endpoint } from './Endpoint';
 import Dict = NodeJS.Dict;
 import { DecoderFunction } from 'typescript-json-decoder';
 
-export type Api = {
+export type Api<T = any> = {
     baseUrl: string;
     method?: Method;
-    endpoints: Endpoint<unknown>[];
-    decoder?: DecoderFunction<unknown>;
+    endpoints: Endpoint<T>[];
+    decoder?: DecoderFunction<T>;
     preRequestAction?: (axiosConfig: AxiosRequestConfig) => AxiosRequestConfig;
     postRequestValidation?: (data: unknown, json: any) => void;
     queryParameters?: Dict<string[] | string | number | boolean>;

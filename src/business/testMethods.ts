@@ -92,9 +92,12 @@ async function testEndpoint<T>(
         data: endpoint.data ?? api.data,
     };
 
-    if (endpoint.preRequestAction)
+    if (endpoint.preRequestAction) {
         axiosRequestConfig = endpoint.preRequestAction(axiosRequestConfig);
-    else if (api.preRequestAction) axiosRequestConfig = api.preRequestAction(axiosRequestConfig);
+    }
+    else if (api.preRequestAction) {
+        axiosRequestConfig = api.preRequestAction(axiosRequestConfig);
+    }
 
     return axios
         .request(axiosRequestConfig)
@@ -126,8 +129,8 @@ async function testEndpoint<T>(
         });
 }
 
-export async function testEndpoints(config: ApiTesterConfig): Promise<TestResult<unknown>[]> {
-    const testResults: Promise<TestResult<unknown>>[] = [];
+export async function testEndpoints<T = any>(config: ApiTesterConfig): Promise<TestResult<T>[]> {
+    const testResults: Promise<TestResult<T>>[] = [];
     const bar = new SingleBar(
         { format: `|{bar}| {percentage}% || {value}/{total}` },
         Presets.shades_classic
@@ -140,7 +143,7 @@ export async function testEndpoints(config: ApiTesterConfig): Promise<TestResult
     );
 
     config.apisConfig.forEach((api) =>
-        api.endpoints.forEach((endpoint: Endpoint<unknown>) =>
+        api.endpoints.forEach((endpoint) =>
             testResults.push(
                 testEndpoint(api, endpoint, () => {
                     bar.increment();

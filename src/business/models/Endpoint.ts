@@ -2,7 +2,7 @@ import { DecoderFunction } from 'typescript-json-decoder';
 import Dict = NodeJS.Dict;
 import { AxiosRequestConfig, Method } from 'axios';
 
-export type Endpoint<T> = {
+export type Endpoint<T = any> = {
     description?: string;
     route: string;
     method?: Method;
