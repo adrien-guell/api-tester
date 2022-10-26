@@ -28,7 +28,7 @@ export function getLogPath(): string {
     } else {
         if (fs.readdirSync(logDir).length) {
             const mostRecentLogPath = getMostRecentFilename(logDir);
-            if (fs.statSync(mostRecentLogPath).size < config.logMaxSize) {
+            if (fs.statSync(mostRecentLogPath).size / (1024*1024) < config.logMaxSize) {
                 logPath = mostRecentLogPath;
             }
         }
