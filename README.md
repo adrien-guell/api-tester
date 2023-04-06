@@ -22,7 +22,7 @@ ___
 
 Create the apitester-config.ts file in the root of your project.
 
-A configuration contains a list of API configuration which contains a list of endpoint configuration.
+A configuration contains a list of API configuration which contains a list of test configuration.
 
 ```typescript
 import { ApiTesterConfig } from "api-tester";
@@ -124,17 +124,17 @@ Both the default functions and the functions will run if they are set.
 
 ## Api
 
-| Attribute | Type                                                                                                                                                     | Description                                                                                                     |
-|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| `baseUrl` | <code>string</code>                                                                                                                                      | base url of the api                                                                                             |
-| `tests`   | <code>[Endpoint](#Endpoint)<T>[]</code>                                                                                                                  | endpoints configuration                                                                                         |
+| Attribute | Type                            | Description         |
+|-----------|---------------------------------|---------------------|
+| `baseUrl` | <code>string</code>             | base url of the api |
+| `tests`   | <code>[Test](#Test)<T>[]</code> | tests configuration |
 
 ## Test
 
-| Attribute      | Type                                                                                                                                                     | Description                                |
-|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------|
-| `description`  | <code>string</code>                                                                                                                                      | name or description of the tested endpoint |
-| `endpointPath` | <code>string</code>                                                                                                                                      | route to the endpoint                      |
+| Attribute      | Type                                                                                                                                                     | Description                           |
+|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------|
+| `description`  | <code>string</code>                                                                                                                                      | name or description of the test |
+| `endpointPath` | <code>string</code>                                                                                                                                      | route to the endpoint                 |
 
 
 
