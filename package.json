@@ -31,7 +31,7 @@
     "typescript-json-decoder": "^1.0.10"
   },
   "name": "decoder-api-tester",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "CLI to test api result decoders",
   "keywords": [
     "cli",
