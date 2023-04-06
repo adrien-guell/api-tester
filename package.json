@@ -31,14 +31,14 @@
     "typescript-json-decoder": "^1.0.10"
   },
   "name": "decoder-api-tester",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "CLI to test api result decoders",
   "keywords": [
     "cli",
     "api",
     "test"
   ],
-  "author": "Bryan Barre",
+  "author": "Adrien Güell",
   "license": "ICS",
   "repository": "https://gitlab.com/Bryan_BARRE/apitester",
   "homepage": "https://gitlab.com/Bryan_BARRE/apitester"

@@ -1,11 +1,5 @@
 import Dict = NodeJS.Dict;
-import {
-    complementaryDataIsDecodeErrorData,
-    complementaryDataIsPostRequestErrorData,
-    complementaryDataIsRequestErrorData,
-    ResultStatus,
-    TestResult,
-} from '../business/models/TestResult';
+import { ComplementaryData, ResultStatus, TestResult } from '../business/models/TestResult';
 import { Method } from 'axios';
 import { cssString, resultStatusDict, scriptString } from './strings';
 import { findFileFolderInCurrentTree, groupBy } from '../utils';
@@ -24,18 +18,25 @@ export type HtmlReportData = {
     dateTime: string;
 };
 
+export function getError<T>(complementaryData: ComplementaryData<T>): string {
+    switch (complementaryData.status) {
+        case 'requestError':
+            return complementaryData.error.message;
+        case 'beforeDecodeError':
+            return complementaryData.error;
+        case 'decodeError':
+            return complementaryData.error;
+        case 'postRequestError':
+            return complementaryData.error;
+        case 'success':
+            return 'none';
+
+    }
+}
+
 export function testResultsToHtmlReportsData(testResults: TestResult<unknown>[]) {
     return testResults.map((testResult) => {
-        let error: string;
-        if (complementaryDataIsDecodeErrorData(testResult.complementaryData)) {
-            error = testResult.complementaryData.error;
-        } else if (complementaryDataIsPostRequestErrorData(testResult.complementaryData)) {
-            error = testResult.complementaryData.error;
-        } else if (complementaryDataIsRequestErrorData(testResult.complementaryData)) {
-            error = testResult.complementaryData.error.message;
-        } else {
-            error = 'none';
-        }
+        const error = getError(testResult.complementaryData);
 
         return {
             description: testResult.description ?? 'No description',

@@ -1,14 +1,10 @@
 import * as fs from 'fs';
+import { appendFileSync } from 'fs';
 import * as config from '../../config.json';
 import { findFileFolderInCurrentTree, getMostRecentFilename, replaceAll, stringify } from '../utils';
-import {
-    complementaryDataIsDecodeErrorData, complementaryDataIsPostRequestErrorData,
-    complementaryDataIsRequestErrorData, complementaryDataIsSuccessData,
-    TestResult,
-} from '../business/models/TestResult';
+import { ComplementaryData, TestResult } from '../business/models/TestResult';
 import dateFormat from 'dateformat';
 import { resultStatusDict } from './strings';
-import { appendFileSync } from 'fs';
 import { LogData } from './LogData';
 import * as path from 'path';
 
@@ -17,18 +13,18 @@ const { format } = require('@redtea/format-axios-error');
 export function getLogPath(): string {
     let logDir = path.join(
         findFileFolderInCurrentTree('package.json'),
-        config.logDirectory
-    )
+        config.logDirectory,
+    );
     let logPath = path.join(
         logDir,
-        `${config.logFilename}${Date.now()}.txt`
+        `${config.logFilename}${Date.now()}.txt`,
     );
     if (!fs.existsSync(logDir)) {
         fs.mkdirSync(logDir);
     } else {
         if (fs.readdirSync(logDir).length) {
             const mostRecentLogPath = getMostRecentFilename(logDir);
-            if (fs.statSync(mostRecentLogPath).size / (1024*1024) < config.logMaxSize) {
+            if (fs.statSync(mostRecentLogPath).size / (1024 * 1024) < config.logMaxSize) {
                 logPath = mostRecentLogPath;
             }
         }
@@ -36,56 +32,59 @@ export function getLogPath(): string {
     return logPath;
 }
 
-export function testResultsToLogsData<T>(testResults: TestResult<T>[]): LogData[] {
-    return testResults.map((testResult: TestResult<T>) => {
-        const dateTime = dateFormat(new Date(testResult.timestamp), config.dateFormat);
-        const title = resultStatusDict[testResult.complementaryData.status]?.title ?? 'UNKNOWN';
-        const description = resultStatusDict[testResult.complementaryData.status]?.description ?? 'UNKNOWN';
-
-        const complementaryData = testResult.complementaryData;
-        let complementaryBody: any;
-        if (complementaryDataIsRequestErrorData(complementaryData)) {
-            complementaryBody = {
+export function getComplementaryBody<T>(complementaryData: ComplementaryData<T>) {
+    switch (complementaryData.status) {
+        case 'requestError':
+            return {
                 error: complementaryData.error.message,
                 stacktrace: format(complementaryData.error),
             };
-        } else if (complementaryDataIsDecodeErrorData(complementaryData)) {
-            complementaryBody =
-                complementaryData.error instanceof Error
-                    ? {
-                          rawData: complementaryData.rawData,
-                          error: complementaryData.error.message,
-                          stacktrace: complementaryData.error.stack,
-                      }
-                    : {
-                          rawData: complementaryData.rawData,
-                          error: complementaryData.error,
-                          stacktrace: 'Cannot retrieve stacktrace',
-                      };
-        } else if (complementaryDataIsPostRequestErrorData(complementaryData)) {
-            complementaryBody =
-                complementaryData.error instanceof Error
-                    ? {
-                          decodedData: complementaryData.decodedData,
-                          rawData: complementaryData.rawData,
-                          error: complementaryData.error.message,
-                          stacktrace: complementaryData.error.stack,
-                      }
-                    : {
-                          decodedData: complementaryData.decodedData,
-                          rawData: complementaryData.rawData,
-                          error: complementaryData.error,
-                          stacktrace: 'Cannot retrieve stacktrace',
-                      };
-        } else if (complementaryDataIsSuccessData(complementaryData)) {
-            complementaryBody = {
+        case 'beforeDecodeError':
+        case 'decodeError':
+            return complementaryData.error instanceof Error
+                ? {
+                    rawData: complementaryData.rawData,
+                    error: complementaryData.error.message,
+                    stacktrace: complementaryData.error.stack,
+                }
+                : {
+                    rawData: complementaryData.rawData,
+                    error: complementaryData.error,
+                    stacktrace: 'Cannot retrieve stacktrace',
+                };
+        case 'postRequestError':
+            return complementaryData.error instanceof Error
+                ? {
+                    decodedData: complementaryData.decodedData,
+                    rawData: complementaryData.rawData,
+                    error: complementaryData.error.message,
+                    stacktrace: complementaryData.error.stack,
+                }
+                : {
+                    decodedData: complementaryData.decodedData,
+                    rawData: complementaryData.rawData,
+                    error: complementaryData.error,
+                    stacktrace: 'Cannot retrieve stacktrace',
+                };
+        case 'success':
+            return {
                 decodedData: complementaryData.decodedData,
                 rawData: complementaryData.rawData,
                 headers: complementaryData.axiosResponse.headers,
                 status: complementaryData.axiosResponse.status,
                 statusText: complementaryData.axiosResponse.statusText,
             };
-        }
+
+
+    }
+}
+
+export function testResultsToLogsData<T>(testResults: TestResult<T>[]): LogData[] {
+    return testResults.map((testResult: TestResult<T>) => {
+        const dateTime = dateFormat(new Date(testResult.timestamp), config.dateFormat);
+        const title = resultStatusDict[testResult.complementaryData.status]?.title ?? 'UNKNOWN';
+        const description = resultStatusDict[testResult.complementaryData.status]?.description ?? 'UNKNOWN';
+        const complementaryBody = getComplementaryBody(testResult.complementaryData);
 
         const body = {
             description: testResult.description ?? 'No description given',

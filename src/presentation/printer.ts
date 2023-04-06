@@ -1,9 +1,5 @@
 import chalk from 'chalk';
-import {
-    complementaryDataIsDecodeErrorData, complementaryDataIsPostRequestErrorData,
-    complementaryDataIsRequestErrorData, complementaryDataIsSuccessData,
-    TestResult,
-} from '../business/models/TestResult';
+import { TestResult } from '../business/models/TestResult';
 import { groupBy, replaceAll, stringify } from '../utils';
 import { format } from '@redtea/format-axios-error';
 
@@ -36,32 +32,47 @@ export function printResults(testResults: TestResult<unknown>[], verbose: boolea
         printApi(api);
         testResults.forEach((testResult) => {
             const complementaryData = testResult.complementaryData;
-            if (complementaryDataIsRequestErrorData(complementaryData)) {
-                printFailure(
-                    'Request failed',
-                    testResult.description,
-                    testResult.route,
-                    format(complementaryData.error),
-                    verbose
-                );
-            } else if (complementaryDataIsDecodeErrorData(complementaryData)) {
-                printFailure(
-                    'Decoding failed',
-                    testResult.description,
-                    testResult.route,
-                    complementaryData.error,
-                    verbose
-                );
-            } else if (complementaryDataIsPostRequestErrorData(complementaryData)) {
-                printFailure(
-                    'Post request validation failed',
-                    testResult.description,
-                    testResult.route,
-                    complementaryData.error,
-                    verbose
-                );
-            } else if (complementaryDataIsSuccessData(complementaryData)) {
-                console.log(chalk.green(`${testResult.description ?? testResult.route} - Success`));
+            switch (complementaryData.status) {
+                case 'requestError':
+                    printFailure(
+                        'Request failed',
+                        testResult.description,
+                        testResult.route,
+                        format(complementaryData.error),
+                        verbose
+                    );
+                    break;
+                case 'beforeDecodeError':
+                    printFailure(
+                        'Before decode failed',
+                        testResult.description,
+                        testResult.route,
+                        complementaryData.error,
+                        verbose
+                    );
+                    break;
+                case 'decodeError':
+                    printFailure(
+                        'Decoding failed',
+                        testResult.description,
+                        testResult.route,
+                        complementaryData.error,
+                        verbose
+                    );
+                    break;
+                case 'postRequestError':
+                    printFailure(
+                        'Post request validation failed',
+                        testResult.description,
+                        testResult.route,
+                        complementaryData.error,
+                        verbose
+                    );
+                    break;
+                case 'success':
+                    console.log(chalk.green(`${testResult.description ?? testResult.route} - Success`));
+                    break;
+
             }
         });
     }

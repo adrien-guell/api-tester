@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import {testEndpoints} from './src/business/testMethods';
+import {runTests} from './src/business/testMethods';
 import {ApiTesterConfig} from './src/business/models/ApiTesterConfig';
 import {program} from 'commander';
 import {Options} from './src/business/models/Options';
@@ -25,7 +25,7 @@ program
                 const exitCode = await import(configPath)
                     .then(async (defaultImport) => {
                         const config = defaultImport.default;
-                        const testResults = await testEndpoints(config);
+                        const testResults = await runTests(config);
                         writeLogs(testResults);
                         if (options.report) {
                             if (options.report == true) writeHtmlReport(testResults, undefined);

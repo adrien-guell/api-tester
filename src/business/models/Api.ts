@@ -1,16 +1,17 @@
-import { AxiosRequestConfig, Method } from 'axios';
-import { Endpoint } from './Endpoint';
+import { Test } from './Test';
+import { BeforeDecode, Interceptor, OnDecoded } from "./Interceptor";
+import { Method } from "axios";
 import Dict = NodeJS.Dict;
-import { DecoderFunction } from 'typescript-json-decoder';
 
-export type Api<T = any> = {
+export type Api<Data = any> = {
     baseUrl: string;
-    method?: Method;
-    decoder?: DecoderFunction<T>;
-    preRequestAction?: (axiosConfig: AxiosRequestConfig) => AxiosRequestConfig;
-    postRequestValidation?: (data: T, json: any) => void;
-    queryParameters?: Dict<string[] | string | number | boolean>;
-    headers?: Record<string, string | number | boolean>;
-    data?: any;
-    endpoints: Endpoint<T>[];
+    tests: Test<any>[];
+
+    defaultMethod?: Method;
+    defaultInterceptor?: Interceptor;
+    defaultBeforeDecode?: BeforeDecode;
+    defaultOnDecoded?: OnDecoded<Data>;
+    defaultQueryParameters?: Dict<string[] | string | number | boolean>;
+    defaultHeaders?: Record<string, string | number | boolean>;
+    defaultData?: any;
 };

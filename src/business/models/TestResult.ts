@@ -1,6 +1,6 @@
 import { AxiosError, AxiosResponse, Method } from 'axios';
 
-export type ResultStatus = 'requestError' | 'decodeError' | 'postRequestError' | 'success';
+export type ResultStatus = 'requestError' | 'beforeDecodeError' | 'decodeError' | 'postRequestError' | 'success';
 
 export type TestResult<T> = {
     description?: string;
@@ -13,6 +13,7 @@ export type TestResult<T> = {
 
 export type ComplementaryData<T> =
     | RequestErrorData
+    | BeforeDecodeErrorData
     | DecodeErrorData
     | PostRequestErrorData<T>
     | SuccessData<T>;
@@ -21,6 +22,12 @@ export type RequestErrorData = {
     status: 'requestError';
     error: AxiosError;
 };
+
+export type BeforeDecodeErrorData = {
+    status: 'beforeDecodeError';
+    rawData: any;
+    error: any;
+}
 
 export type DecodeErrorData = {
     status: 'decodeError';
@@ -41,27 +48,3 @@ export type SuccessData<T> = {
     rawData: any;
     axiosResponse: AxiosResponse;
 };
-
-export function complementaryDataIsRequestErrorData<T>(
-    complementaryData: ComplementaryData<T>
-): complementaryData is RequestErrorData {
-    return complementaryData.status == 'requestError';
-}
-
-export function complementaryDataIsDecodeErrorData<T>(
-    complementaryData: ComplementaryData<T>
-): complementaryData is DecodeErrorData {
-    return complementaryData.status == 'decodeError';
-}
-
-export function complementaryDataIsPostRequestErrorData<T>(
-    complementaryData: ComplementaryData<T>
-): complementaryData is PostRequestErrorData<T> {
-    return complementaryData.status == 'postRequestError';
-}
-
-export function complementaryDataIsSuccessData<T>(
-    complementaryData: ComplementaryData<T>
-): complementaryData is SuccessData<T> {
-    return complementaryData.status == 'success';
-}

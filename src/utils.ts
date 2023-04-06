@@ -1,10 +1,9 @@
 import * as path from 'path';
-import { existsSync, readdirSync, statSync } from 'fs';
+import fs, { existsSync, readdirSync, statSync } from 'fs';
 import stringifyObject from 'stringify-object';
 import * as config from '../config.json';
-import { exec } from 'child_process';
-import { complementaryDataIsSuccessData, TestResult } from './business/models/TestResult';
-import fs from 'fs';
+import { execSync } from 'child_process';
+import { TestResult } from './business/models/TestResult';
 
 export function getMostRecentFilename(directory: string): string {
     const files = readdirSync(directory);
@@ -17,7 +16,7 @@ export function getMostRecentFilename(directory: string): string {
 
 export function getBuiltConfigFile(userDefinedConfigPath?: string): Promise<string> {
     return new Promise<string>((resolve, reject) => {
-        const flags = '--resolveJsonModule --downlevelIteration --esModuleInterop';
+        const flags = '--resolveJsonModule --downlevelIteration --esModuleInterop --strict';
 
         const projectRootFolder = findFileFolderInCurrentTree('package.json');
         const configPath =
@@ -32,12 +31,14 @@ export function getBuiltConfigFile(userDefinedConfigPath?: string): Promise<stri
         const builtConfigPath = path.join(
             projectRootFolder,
             config.defaultBuildFolder,
-            `${config.defaultConfigFilename}.js`
+            `${config.defaultConfigFilename}.js`,
         );
-        exec(command).on('exit', (code: number) => {
-            if (code != 0) reject('Cannot execute command: ' + command);
+        try {
+            execSync(command, { stdio: 'inherit' });
             resolve(builtConfigPath);
-        });
+        } catch (error) {
+            reject(error);
+        }
     });
 }
 
@@ -82,7 +83,7 @@ export function groupBy<T, K>(list: T[], keyGetter: (data: T) => K): Map<K, T[]>
 
 export function getExitCode(testResults: TestResult<unknown>[]) {
     return testResults.find(
-        (testResult) => !complementaryDataIsSuccessData(testResult.complementaryData)
+        (testResult) => testResult.complementaryData.status != 'success',
     )
         ? 1
         : 0;

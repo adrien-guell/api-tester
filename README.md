@@ -33,42 +33,56 @@ const config: ApiTesterConfig = {
     apisConfig: [
         {
             baseUrl: "https://my-api.com/",
-            method: "post",
-            decoder: firstDecoder,
-            preRequestAction: (axiosConfig: AxiosRequestConfig) => {
+            defaultMethod: "post",
+            defaultinterceptor: (axiosConfig: AxiosRequestConfig, context: any) => {
                 axiosConfig.headers["AccessToken"] = getAccessToken();
+                axiosConfig.params = { id: context.myId }
                 return axiosConfig;
             },
-            postRequestValidation: (data: Data) => {
+            defaultBeforeDecode: (json: unknown) => {
+                if (json.code == 404) {
+                    throw 'Error 404';
+                }
+            },
+            defaultOnDecoded: (data: Data, json: any, setContext: (context: any) => void) => {
                 if (!isWantedFormat(data.formatedString)) {
                     throw 'formatedString is not on the right format';
                 }
+                setContext({ myId: data.array[0].id })
             },
-            queryParameters: {
+            defaultQueryParameters: {
                 apiKey: "my-api-key"
             },
-            headers: {
+            defaultHeaders: {
                 "Connection": "Keep-Alive"
             },
-            data: {
+            defaultData: {
                 foo: "bar"
             },
-            endpoints: [
-                // This endpoint will use the config of the api
+            tests: [
+                // This test will use the default options 
                 {
                     description: "Post data",
-                    route: "data/post",
+                    endpointPath: "data/post",
+                    decoder: firstDecoder
                 },
-                // Here all the config will overwrite the ones of the api
                 {
                     description: "Get random data",
-                    route: "data/random",
+                    endpointPath: "data/random",
                     method: "get",
                     decoder: secondDecoder,
-                    preRequestAction: (axiosConfig: AxiosRequestConfig) => {
+                    interceptor: (axiosConfig: AxiosRequestConfig) => {
                         return axiosConfig;
                     },
-                    postRequestValidation: (data: Data) => {
+                    beforeDecode: (json: unknown) => {
+                        if (json.code == 404) {
+                            throw 'Error 404';
+                        }
+                    },
+                    onDecoded: (data: Data) => {
+                        if (!isWantedFormat(data.formatedString)) {
+                            throw 'formatedString is not on the right format';
+                        }
                     },
                     queryParameters: {
                         limit: false
@@ -93,32 +107,34 @@ Run the command `api-tester`
 
 ## Common parameters
 
-The endpoint config is used first, if a field is not specified, then the api config will be used.
+The default options set in the api will be used if none are set in a test.
+Both the default functions and the functions will run if they are set.
 
-| Attribute               | Type                                                                                                                                                     | Description                                                                                                     |
-|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| `method`                | <code>'get' &vert; 'delete' &vert; 'head' &vert; 'options' &vert; 'post' &vert; 'put' &vert; 'patch' &vert; 'purge' &vert; 'link' &vert; 'unlink'</code> | http rest method                                                                                                |
-| `decoder`               | <code>(input: unknown) => T</code>                                                                                                                       | decoder function                                                                                                |
-| `preRequestAction`      | <code>(axiosConfig: AxiosRequestConfig) => AxiosRequestConfig</code>                                                                                     | function called after the axios config object is generated, it must return axiosConfig                          |
-| `postRequestValidation` | <code>(data: T, json: any) => void</code>                                                                                                                | function called after decoder, it must throw an error if the decoded data or the received raw json is not valid |
-| `queryParameters`       | <code>Dict<string[] &vert; string &vert; number &vert; boolean></code>                                                                                   | query parameters of the request                                                                                 |
-| `headers`               | <code>Dict<string &vert; number &vert; boolean></code>                                                                                                   | headers of the request                                                                                          |
-| `data`                  | <code>any</code>                                                                                                                                         | data stored in the body of the request                                                                          |
+| Attribute         | Type                                                                                                                                                     | Description                                                                                                     |
+|-------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| `method`          | <code>'get' &vert; 'delete' &vert; 'head' &vert; 'options' &vert; 'post' &vert; 'put' &vert; 'patch' &vert; 'purge' &vert; 'link' &vert; 'unlink'</code> | http rest method                                                                                                |
+| `decoder`         | <code>(input: unknown) => T</code>                                                                                                                       | decoder function                                                                                                |
+| `interceptor`     | <code>(axiosConfig: AxiosRequestConfig, contest: any) => AxiosRequestConfig</code>                                                                       | function called after the axios config object is generated, it must return axiosConfig                          |
+| `beforeDecode`    | <code>(json: any) => void</code>                                                                                                                         | function called after the axios config object is generated, it must return axiosConfig                          |
+| `onDecoded`       | <code>(data: T, json: any, setContext: (context: any) => void) => void</code>                                                                            | function called after decoder, it must throw an error if the decoded data or the received raw json is not valid |
+| `queryParameters` | <code>Dict<string[] &vert; string &vert; number &vert; boolean></code>                                                                                   | query parameters of the request                                                                                 |
+| `headers`         | <code>Dict<string &vert; number &vert; boolean></code>                                                                                                   | headers of the request                                                                                          |
+| `data`            | <code>any</code>                                                                                                                                         | data stored in the body of the request                                                                          |
 
 
 ## Api
 
-| Attribute               | Type                                                                                                                                                     | Description                                                                                                     |
-|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| `baseUrl`               | <code>string</code>                                                                                                                                      | base url of the api                                                                                             |
-| `endpoints`             | <code>[Endpoint](#Endpoint)<T>[]</code>                                                                                                                  | endpoints configuration                                                                                         |
+| Attribute | Type                                                                                                                                                     | Description                                                                                                     |
+|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| `baseUrl` | <code>string</code>                                                                                                                                      | base url of the api                                                                                             |
+| `tests`   | <code>[Endpoint](#Endpoint)<T>[]</code>                                                                                                                  | endpoints configuration                                                                                         |
 
-## Endpoint
+## Test
 
-| Attribute               | Type                                                                                                                                                     | Description                                |
-|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------|
-| `description`           | <code>string</code>                                                                                                                                      | name or description of the tested endpoint |
-| `route`                 | <code>string</code>                                                                                                                                      | route to the endpoint                      |
+| Attribute      | Type                                                                                                                                                     | Description                                |
+|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------|
+| `description`  | <code>string</code>                                                                                                                                      | name or description of the tested endpoint |
+| `endpointPath` | <code>string</code>                                                                                                                                      | route to the endpoint                      |
 
 
 
